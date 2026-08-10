@@ -2,7 +2,7 @@
   <div class="flex flex-col h-screen max-w-md mx-auto bg-gradient-to-b from-gray-50 to-gray-200 font-sans relative">
     
     <!-- ===== 顶部状态栏 ===== -->
-    <div class="bg-white/90 backdrop-blur p-4 shadow-sm z-10">
+    <div class="bg-white/90 backdrop-blur p-4 shadow-sm z-10 flex-shrink-0">
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2">
           <span class="text-2xl">⚽</span>
@@ -27,63 +27,64 @@
       </div>
     </div>
 
-    <!-- ===== 中部卡片区 ===== -->
-    <div class="flex-1 overflow-hidden relative p-4 flex items-center">
-      <!-- 当前展示球员卡片 -->
-      <div 
-        v-if="currentCandidates.length > 0" 
-        class="w-full bg-white rounded-3xl shadow-2xl p-6 relative transform transition-all duration-300"
-        :class="{ 'scale-95 opacity-50': isSelecting }"
-      >
-        <!-- 角标：位置 -->
-        <span class="absolute top-4 right-4 text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full">
-          {{ currentCandidates[currentIndex].position }}
-        </span>
-        
-        <!-- 球员头像（用首字母+颜色模拟） -->
-        <div class="w-28 h-28 mx-auto rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-5xl text-white shadow-lg mb-4">
-          {{ currentCandidates[currentIndex].name.charAt(0) }}
-        </div>
-        
-        <!-- 姓名和评分 -->
-        <h2 class="text-2xl font-bold text-center text-gray-800">
-          {{ currentCandidates[currentIndex].name }}
-        </h2>
-        <div class="flex justify-center items-center gap-2 mt-1">
-          <span class="text-sm text-gray-400">综合评分</span>
-          <span class="text-3xl font-extrabold text-green-600">{{ currentCandidates[currentIndex].rating }}</span>
+    <!-- ===== 中部：表格列表 ===== -->
+    <div class="flex-1 overflow-y-auto p-4">
+      <div v-if="currentCandidates.length > 0" class="space-y-3">
+        <!-- 表头 -->
+        <div class="flex items-center text-xs text-gray-400 px-3 py-1">
+          <span class="w-10">#</span>
+          <span class="flex-1">球员</span>
+          <span class="w-12 text-center">位置</span>
+          <span class="w-12 text-center">评分</span>
+          <span class="w-16 text-center">操作</span>
         </div>
 
-        <!-- 能力值条形图（更直观） -->
-        <div class="mt-4 space-y-1.5">
-          <div v-for="(value, key) in currentCandidates[currentIndex].stats" :key="key" class="flex items-center gap-2">
-            <span class="text-xs text-gray-500 w-8">{{ key }}</span>
-            <div class="flex-1 bg-gray-200 rounded-full h-2">
-              <div class="bg-blue-500 h-2 rounded-full" :style="{ width: value + '%' }"></div>
-            </div>
-            <span class="text-xs font-semibold text-gray-600 w-6">{{ value }}</span>
-          </div>
-        </div>
-
-        <!-- 缩略图导航（点选切换） -->
-        <div class="flex justify-center gap-3 mt-5">
-          <button 
-            v-for="(player, idx) in currentCandidates" 
-            :key="idx"
-            @click="currentIndex = idx"
-            class="w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all"
-            :class="idx === currentIndex ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-300 text-gray-400 hover:border-gray-400'"
-          >
+        <!-- 球员行 -->
+        <div 
+          v-for="(player, idx) in currentCandidates" 
+          :key="player.id"
+          class="bg-white rounded-2xl shadow-md p-3 flex items-center gap-2 transition-all active:scale-[0.98]"
+          :class="{ 'border-2 border-green-400': selectedId === player.id }"
+          @click="selectedId = player.id"
+        >
+          <!-- 序号 -->
+          <span class="w-6 text-sm font-bold text-gray-400">{{ idx + 1 }}</span>
+          
+          <!-- 头像（字母） -->
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
+               :class="getColor(idx)">
             {{ player.name.charAt(0) }}
+          </div>
+          
+          <!-- 姓名和位置 -->
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-gray-800 text-sm truncate">{{ player.name }}</div>
+            <div class="text-xs text-gray-400">{{ player.position }}</div>
+          </div>
+          
+          <!-- 评分 -->
+          <div class="text-center w-10">
+            <span class="font-bold text-green-600 text-lg">{{ player.rating }}</span>
+          </div>
+          
+          <!-- 签约按钮 -->
+          <button 
+            @click.stop="signPlayer(player)"
+            class="px-3 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95 flex-shrink-0"
+            :class="selectedId === player.id ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-500'"
+          >
+            签约
           </button>
         </div>
-        
-        <!-- 滑动提示（左右箭头） -->
-        <div class="absolute left-2 top-1/2 -translate-y-1/2 text-3xl text-gray-300 opacity-60 pointer-events-none">
-          ‹
-        </div>
-        <div class="absolute right-2 top-1/2 -translate-y-1/2 text-3xl text-gray-300 opacity-60 pointer-events-none">
-          ›
+
+        <!-- 底部操作栏：跳过本轮 -->
+        <div class="flex gap-3 mt-4">
+          <button 
+            @click="skipCurrent" 
+            class="flex-1 py-3 bg-gray-200 rounded-2xl text-gray-700 font-bold active:bg-gray-300 transition-all active:scale-95"
+          >
+            ⏭ 跳过本轮（淘汰5人）
+          </button>
         </div>
       </div>
 
@@ -92,56 +93,40 @@
         <div class="text-6xl mb-4">🎉</div>
         <h3 class="text-xl font-bold text-gray-700">选秀结束！</h3>
         <p class="text-gray-500 mt-2">你共签约了 {{ myTeam.length }} 名球员</p>
+        <button 
+          @click="restartGame" 
+          class="mt-6 px-8 py-3 bg-green-500 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition"
+        >
+          🔄 重新开始
+        </button>
       </div>
     </div>
 
-    <!-- ===== 底部操作区 ===== -->
-    <div class="bg-white/90 backdrop-blur p-4 pb-6 shadow-inner flex gap-3">
-      <!-- 跳过按钮 -->
-      <button 
-        @click="skipCurrent" 
-        class="flex-1 py-4 bg-gray-200 rounded-2xl text-gray-700 font-bold active:bg-gray-300 transition-all active:scale-95"
-        :disabled="isSelecting || currentCandidates.length === 0"
+    <!-- ===== 底部：我的球队 ===== -->
+    <div class="bg-white/90 backdrop-blur p-3 shadow-inner flex-shrink-0">
+      <div 
+        @click="showTeam = !showTeam"
+        class="flex items-center justify-between cursor-pointer active:scale-95 transition"
       >
-        ⏭ 跳过
-      </button>
-      
-      <!-- 签约按钮（主操作） -->
-      <button 
-        @click="signPlayer" 
-        class="flex-[2] py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl text-white font-bold text-lg shadow-lg active:scale-95 transition-all"
-        :class="{ 'opacity-50 pointer-events-none': isSelecting || currentCandidates.length === 0 }"
-      >
-        ✅ 签约这名球员
-      </button>
-    </div>
-
-    <!-- ===== 已签约名单（底部弹出，轻触查看） ===== -->
-    <div 
-      @click="showTeam = !showTeam"
-      class="absolute bottom-20 right-4 bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2 cursor-pointer active:scale-95 transition"
-    >
-      <span class="text-sm">🏠 我的球队</span>
-      <span class="bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{ myTeam.length }}</span>
-    </div>
-
-    <!-- 球队名单弹窗 -->
-    <div 
-      v-if="showTeam" 
-      @click="showTeam = false"
-      class="fixed inset-0 bg-black/50 flex items-end justify-center z-50"
-    >
-      <div @click.stop class="bg-white w-full max-w-md rounded-t-3xl p-6 max-h-[50vh] overflow-y-auto">
-        <h3 class="font-bold text-lg mb-3">📋 我的球队（{{ myTeam.length }}人）</h3>
-        <div class="space-y-2">
-          <div v-for="(p, idx) in myTeam" :key="idx" class="flex items-center gap-3 p-2 bg-gray-50 rounded-xl">
-            <span class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold">{{ p.name.charAt(0) }}</span>
-            <span class="font-medium">{{ p.name }}</span>
-            <span class="text-xs text-gray-400 ml-auto">{{ p.position }}</span>
-            <span class="text-green-600 font-bold">{{ p.rating }}</span>
-          </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🏠</span>
+          <span class="font-medium text-gray-700">我的球队</span>
+          <span class="bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{ myTeam.length }}</span>
         </div>
-        <button @click="showTeam = false" class="w-full mt-4 py-3 bg-gray-200 rounded-xl font-bold">关闭</button>
+        <span class="text-gray-400 text-sm">{{ showTeam ? '收起 ▲' : '展开 ▼' }}</span>
+      </div>
+      
+      <!-- 球队名单 -->
+      <div v-if="showTeam && myTeam.length > 0" class="mt-2 max-h-32 overflow-y-auto space-y-1">
+        <div v-for="(p, idx) in myTeam" :key="idx" class="flex items-center gap-2 p-2 bg-gray-50 rounded-xl text-sm">
+          <span class="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">{{ p.name.charAt(0) }}</span>
+          <span class="font-medium">{{ p.name }}</span>
+          <span class="text-xs text-gray-400">{{ p.position }}</span>
+          <span class="text-green-600 font-bold ml-auto">{{ p.rating }}</span>
+        </div>
+      </div>
+      <div v-else-if="showTeam && myTeam.length === 0" class="mt-2 text-sm text-gray-400 text-center py-2">
+        还没有签约任何球员
       </div>
     </div>
   </div>
@@ -210,7 +195,7 @@ const currentRound = ref(1);
 const availablePool = ref([]);
 const myTeam = ref([]);
 const currentCandidates = ref([]);
-const currentIndex = ref(0);
+const selectedId = ref(null);
 const isSelecting = ref(false);
 const showTeam = ref(false);
 
@@ -235,20 +220,19 @@ const fetchCandidates = () => {
   const shuffled = shuffleArray(availablePool.value);
   const count = Math.min(5, shuffled.length);
   currentCandidates.value = shuffled.slice(0, count);
-  currentIndex.value = 0;
+  selectedId.value = currentCandidates.value.length > 0 ? currentCandidates.value[0].id : null;
 };
 
 // 签约
-const signPlayer = () => {
-  if (currentCandidates.value.length === 0 || isSelecting.value) return;
+const signPlayer = (player) => {
+  if (isSelecting.value) return;
   
   isSelecting.value = true;
-  const selectedPlayer = currentCandidates.value[currentIndex.value];
   
   // 加入球队
-  myTeam.value.push(selectedPlayer);
+  myTeam.value.push(player);
   
-  // 从总池中移除本轮5名候选人
+  // 从总池中移除本轮所有候选人
   const candidateIds = currentCandidates.value.map(p => p.id);
   availablePool.value = availablePool.value.filter(p => !candidateIds.includes(p.id));
   
@@ -268,7 +252,7 @@ const signPlayer = () => {
   }, 300);
 };
 
-// 跳过
+// 跳过本轮
 const skipCurrent = () => {
   if (currentCandidates.value.length === 0 || isSelecting.value) return;
   
@@ -288,45 +272,33 @@ const skipCurrent = () => {
   }, 300);
 };
 
-// ==================== 键盘快捷键（PC调试用） ====================
-const handleKeydown = (e) => {
-  if (e.key === 'ArrowLeft' && currentCandidates.value.length > 0) {
-    currentIndex.value = (currentIndex.value - 1 + currentCandidates.value.length) % currentCandidates.value.length;
-  } else if (e.key === 'ArrowRight' && currentCandidates.value.length > 0) {
-    currentIndex.value = (currentIndex.value + 1) % currentCandidates.value.length;
-  } else if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    signPlayer();
-  } else if (e.key === 's' || e.key === 'S') {
-    skipCurrent();
-  }
+// 重新开始
+const restartGame = () => {
+  availablePool.value = shuffleArray([...mockDatabase]);
+  myTeam.value = [];
+  currentRound.value = 1;
+  selectedId.value = null;
+  showTeam.value = false;
+  fetchCandidates();
+};
+
+// 头像颜色
+const getColor = (index) => {
+  const colors = [
+    'bg-blue-500', 'bg-green-500', 'bg-red-500', 
+    'bg-yellow-500', 'bg-purple-500'
+  ];
+  return colors[index % colors.length];
 };
 
 // ==================== 生命周期 ====================
 onMounted(() => {
-  // 初始化球员池
   availablePool.value = shuffleArray([...mockDatabase]);
   fetchCandidates();
-  
-  // 监听键盘事件（PC端调试方便）
-  window.addEventListener('keydown', handleKeydown);
 });
 </script>
 
 <style scoped>
-/* 卡片的入场动画 */
-.fade-enter-active, .fade-leave-active {
-  transition: all 0.3s ease;
-}
-.fade-enter-from {
-  transform: translateY(20px);
-  opacity: 0;
-}
-.fade-leave-to {
-  transform: translateY(-20px);
-  opacity: 0;
-}
-
 /* 滚动条美化 */
 ::-webkit-scrollbar {
   width: 4px;
@@ -334,5 +306,8 @@ onMounted(() => {
 ::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 </style>

@@ -9,7 +9,7 @@
           <span class="text-xl font-bold text-transparent">　</span>
         </div>
         <div class="text-right">
-          <span class="text-sm text-gray-500">已签</span>
+          <span class="text-sm text-gray-500">已选</span>
           <span class="font-bold text-green-600 text-lg ml-1">{{ myTeam.length }}</span>
           <span class="text-gray-400 text-sm">/ {{ totalRounds }}</span>
         </div>
@@ -66,7 +66,7 @@
           </div>
         </div>
         <div class="text-center text-xs text-gray-400 py-2">
-          点击球员查看详情，点击 ✓ 
+          点击球员查看详情，点击 ✓ 选择
         </div>
 
         <!-- ===== 雷达图 ===== -->

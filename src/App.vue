@@ -65,10 +65,13 @@
             </button>
           </div>
         </div>
+        <div class="text-center text-xs text-gray-400 py-2">
+          点击球员查看详情，点击 ✓ 
+        </div>
 
         <!-- ===== 雷达图 ===== -->
         <div class="mt-4 bg-white rounded-2xl shadow-md p-3">
-          <div class="text-xs text-gray-400 text-center mb-1">—— 能力雷达图（五人对比） ——</div>
+          <div class="text-xs text-gray-400 text-center mb-1">————</div>
           <div class="w-full" style="height: 280px; position: relative;">
             <Radar 
               :data="radarData" 
@@ -92,16 +95,14 @@
           </div>
         </div>
 
-        <div class="text-center text-xs text-gray-400 py-2">
-          点击球员查看详情，点击 ✓ 签约
-        </div>
+
       </div>
 
       <!-- ===== 空状态（选秀结束） ===== -->
       <div v-else class="w-full text-center py-12">
         <div class="text-6xl mb-4">🎉</div>
         <h3 class="text-xl font-bold text-gray-700">完成</h3>
-        <p class="text-gray-500 mt-2">你共有 {{ myTeam.length }} 名球员</p>
+        <p class="text-gray-500 mt-2">共有 {{ myTeam.length }} 名球员</p>
         <!-- 查看完整球队按钮（手机端友好） -->
 
         <button 

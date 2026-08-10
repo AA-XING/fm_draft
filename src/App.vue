@@ -413,8 +413,10 @@ const hexToRgba = (hex, opacity) => {
 // ==================== 滚动到底部（查看球队） ====================
 const scrollToTeam = () => {
   nextTick(() => {
-    if (teamSection.value) {
-      teamSection.value.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    const container = document.querySelector('.flex-1.overflow-y-auto');
+    if (container && teamSection.value) {
+      const bottomOffset = teamSection.value.offsetTop;
+      container.scrollTo({ top: bottomOffset, behavior: 'smooth' });
     }
   });
 };

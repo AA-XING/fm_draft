@@ -4,13 +4,9 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  },
-  // ===== 关键配置 =====
-  base: process.env.NODE_ENV === 'production' ? '/fm_draft/' : '/',
+  // ===== 根据你的部署平台修改 =====
+  base: '/',  // 如果是部署到根目录（ESA Pages、Vercel、OSS）
+  // base: '/仓库名/',  // 如果是部署到 GitHub Pages 子目录
   build: {
     cssMinify: 'esbuild',
   }

@@ -93,25 +93,32 @@
         </div>
 
         <div class="text-center text-xs text-gray-400 py-2">
-          点击球员查看详情，点击 ✓ 
+          点击球员查看详情，点击 ✓ 签约
         </div>
       </div>
 
+      <!-- ===== 空状态（选秀结束） ===== -->
       <div v-else class="w-full text-center py-12">
         <div class="text-6xl mb-4">🎉</div>
-        <h3 class="text-xl font-bold text-gray-700">结束</h3>
-        <p class="text-gray-500 mt-2">你共选了 {{ myTeam.length }} 名球员</p>
+        <h3 class="text-xl font-bold text-gray-700">完成</h3>
+        <p class="text-gray-500 mt-2">你共有 {{ myTeam.length }} 名球员</p>
+        <!-- 查看完整球队按钮（手机端友好） -->
+        
         <button 
           @click="restartGame" 
-          class="mt-6 px-8 py-3 bg-green-500 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition"
+          class="mt-4 px-6 py-2 bg-green-500 text-white rounded-xl font-bold shadow-lg active:scale-95 transition ml-2"
         >
-          🔄 重新开始
+          🔄 
         </button>
       </div>
     </div>
 
-    <!-- ===== 底部：我的球队 ===== -->
-    <div class="bg-white/90 backdrop-blur p-3 shadow-inner flex-shrink-0">
+    <!-- ===== 底部：我的球队（选秀结束后自动展开） ===== -->
+    <div 
+      ref="teamSection"
+      class="bg-white/90 backdrop-blur p-3 shadow-inner flex-shrink-0 transition-all duration-500"
+      :class="myTeam.length === totalRounds ? 'border-t-4 border-green-500' : ''"
+    >
       <div 
         @click="showTeam = !showTeam"
         class="flex items-center justify-between cursor-pointer active:scale-95 transition"
@@ -123,8 +130,15 @@
         </div>
         <span class="text-gray-400 text-sm">{{ showTeam ? '收起 ▲' : '展开 ▼' }}</span>
       </div>
+      
+      <!-- 球队名单 -->
       <div v-if="showTeam && myTeam.length > 0" class="mt-2 max-h-32 overflow-y-auto space-y-1">
-        <div v-for="(p, idx) in myTeam" :key="idx" class="flex items-center gap-2 p-2 bg-gray-50 rounded-xl text-sm">
+        <div 
+          v-for="(p, idx) in myTeam" 
+          :key="idx" 
+          class="flex items-center gap-2 p-2 bg-gray-50 rounded-xl text-sm"
+        >
+          <span class="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold">{{ idx + 1 }}</span>
           <span class="font-medium">{{ p.name }}</span>
           <span class="text-xs text-gray-400">{{ p.position }}</span>
           <span class="text-green-600 font-bold ml-auto">{{ p.rating }}</span>
@@ -138,7 +152,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, nextTick } from 'vue';
 import { Radar } from 'vue-chartjs';
 import {
   Chart as ChartJS,
@@ -391,6 +405,15 @@ const hexToRgba = (hex, opacity) => {
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 };
 
+// ==================== 滚动到底部（查看球队） ====================
+const scrollToTeam = () => {
+  nextTick(() => {
+    if (teamSection.value) {
+      teamSection.value.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  });
+};
+
 // ==================== 雷达图数据（核心：选中球员置顶 + 透明度控制） ====================
 const radarData = computed(() => {
   const labels = abilityKeys;
@@ -467,6 +490,11 @@ const signPlayer = (player) => {
     isSelecting.value = false;
     if (currentRound.value > totalRounds || availablePool.value.length === 0) {
       currentCandidates.value = [];
+      // ===== 选秀结束，自动展开我的球队并滚动到底部 =====
+      showTeam.value = true;
+      setTimeout(() => {
+        scrollToTeam();
+      }, 300);
     } else {
       fetchCandidates();
     }

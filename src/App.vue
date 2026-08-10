@@ -103,7 +103,12 @@
         <h3 class="text-xl font-bold text-gray-700">完成</h3>
         <p class="text-gray-500 mt-2">你共有 {{ myTeam.length }} 名球员</p>
         <!-- 查看完整球队按钮（手机端友好） -->
-        
+        <button 
+          @click="showTeam = true; scrollToTeam()"
+          class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-xl font-bold shadow-lg active:scale-95 transition"
+        >
+          📋 
+        </button>
         <button 
           @click="restartGame" 
           class="mt-4 px-6 py-2 bg-green-500 text-white rounded-xl font-bold shadow-lg active:scale-95 transition ml-2"

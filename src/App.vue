@@ -536,17 +536,16 @@
         </div>
         
         <!-- 阵型图 -->
-        <!-- 阵型图 -->
         <div class="mb-3 p-3 bg-gray-50 rounded-xl overflow-hidden">
-            <p class="text-center font-bold text-[18px] text-gray-700 mb-2">选择首发</p>
+            <p class="text-center font-bold text-[16px] text-gray-700 mb-2">选择首发</p>
             <div class="relative w-full aspect-[3/4] max-h-[380px] bg-gradient-to-b from-green-600 to-green-800 rounded-xl overflow-hidden">
-                <div class="absolute inset-0 flex flex-col items-center justify-between py-3 px-2">
+                <div class="absolute inset-0 flex flex-col items-center justify-between py-2 px-1">
                     
                     <!-- 第1行：中锋（中路） -->
                     <div class="flex justify-center w-full">
-                        <div class="flex justify-center gap-3" :class="formationData.st === 1 ? 'w-16' : formationData.st === 2 ? 'w-36' : 'w-52'">
+                        <div class="flex justify-center gap-2" :class="formationData.st === 1 ? 'w-12' : formationData.st === 2 ? 'w-28' : 'w-40'">
                             <div v-for="(pos, idx) in getPositions(formationData.st, 'ST')" :key="'st-'+idx" 
-                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                  :class="getPositionColor('ST', idx)"
                                  @click="openPlayerSelect('ST', idx)"
                             >
@@ -556,11 +555,11 @@
                     </div>
                     
                     <!-- 第2行：边锋（左/右）+ 前腰（中路） -->
-                    <div class="flex justify-center items-center w-full gap-2">
+                    <div class="flex justify-center items-center w-full gap-1 px-1">
                         <!-- 左路：边锋 -->
-                        <div class="flex justify-center w-14">
+                        <div class="flex justify-center w-10 flex-shrink-0">
                             <div v-if="formationData.hasWingers >= 1" v-for="(pos, idx) in getPositions(1, 'AML')" :key="'w-left-'+idx" 
-                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                  :class="getPositionColor('AML', idx)"
                                  @click="openPlayerSelect('AML', idx)"
                             >
@@ -569,9 +568,9 @@
                         </div>
                         <!-- 中路：前腰 -->
                         <div class="flex justify-center flex-1">
-                            <div class="flex justify-center gap-3" :class="formationData.cam === 1 ? 'w-16' : formationData.cam === 2 ? 'w-36' : 'w-52'">
+                            <div class="flex justify-center gap-2" :class="formationData.cam === 1 ? 'w-12' : formationData.cam === 2 ? 'w-28' : 'w-40'">
                                 <div v-for="(pos, idx) in getPositions(formationData.cam, 'AMC')" :key="'cam-'+idx" 
-                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                     class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                      :class="getPositionColor('AMC', idx)"
                                      @click="openPlayerSelect('AMC', idx)"
                                 >
@@ -580,9 +579,9 @@
                             </div>
                         </div>
                         <!-- 右路：边锋 -->
-                        <div class="flex justify-center w-14">
+                        <div class="flex justify-center w-10 flex-shrink-0">
                             <div v-if="formationData.hasWingers >= 2" v-for="(pos, idx) in getPositions(1, 'AMR')" :key="'w-right-'+idx" 
-                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                  :class="getPositionColor('AMR', idx)"
                                  @click="openPlayerSelect('AMR', idx)"
                             >
@@ -592,10 +591,10 @@
                     </div>
                     
                     <!-- 第3行：边前卫（左/右）+ 中场（中路） -->
-                    <div class="flex justify-center items-center w-full gap-2">
-                        <div class="flex justify-center w-14">
+                    <div class="flex justify-center items-center w-full gap-1 px-1">
+                        <div class="flex justify-center w-10 flex-shrink-0">
                             <div v-if="formationData.lmrm >= 1" v-for="(pos, idx) in getPositions(1, 'ML')" :key="'lmrm-left-'+idx" 
-                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                  :class="getPositionColor('ML', idx)"
                                  @click="openPlayerSelect('ML', idx)"
                             >
@@ -603,9 +602,9 @@
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
-                            <div class="flex justify-center gap-3" :class="formationData.cm === 1 ? 'w-16' : formationData.cm === 2 ? 'w-36' : 'w-52'">
+                            <div class="flex justify-center gap-2" :class="formationData.cm === 1 ? 'w-12' : formationData.cm === 2 ? 'w-28' : 'w-40'">
                                 <div v-for="(pos, idx) in getPositions(formationData.cm, 'MC')" :key="'cm-'+idx" 
-                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                     class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                      :class="getPositionColor('MC', idx)"
                                      @click="openPlayerSelect('MC', idx)"
                                 >
@@ -613,9 +612,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-center w-14">
+                        <div class="flex justify-center w-10 flex-shrink-0">
                             <div v-if="formationData.lmrm >= 2" v-for="(pos, idx) in getPositions(1, 'MR')" :key="'lmrm-right-'+idx" 
-                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                  :class="getPositionColor('MR', idx)"
                                  @click="openPlayerSelect('MR', idx)"
                             >
@@ -625,10 +624,10 @@
                     </div>
                     
                     <!-- 第4行：边翼卫（左/右）+ 后腰（中路） -->
-                    <div class="flex justify-center items-center w-full gap-2">
-                        <div class="flex justify-center w-14">
+                    <div class="flex justify-center items-center w-full gap-1 px-1">
+                        <div class="flex justify-center w-10 flex-shrink-0">
                             <div v-if="formationData.fullbackType === '边翼卫'" v-for="(pos, idx) in getPositions(1, 'WBL')" :key="'wb-left-'+idx" 
-                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                  :class="getPositionColor('WBL', idx)"
                                  @click="openPlayerSelect('WBL', idx)"
                             >
@@ -636,9 +635,9 @@
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
-                            <div class="flex justify-center gap-3" :class="formationData.cdm === 1 ? 'w-16' : formationData.cdm === 2 ? 'w-36' : 'w-52'">
+                            <div class="flex justify-center gap-2" :class="formationData.cdm === 1 ? 'w-12' : formationData.cdm === 2 ? 'w-28' : 'w-40'">
                                 <div v-for="(pos, idx) in getPositions(formationData.cdm, 'DM')" :key="'cdm-'+idx" 
-                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                     class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                      :class="getPositionColor('DM', idx)"
                                      @click="openPlayerSelect('DM', idx)"
                                 >
@@ -646,9 +645,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-center w-14">
+                        <div class="flex justify-center w-10 flex-shrink-0">
                             <div v-if="formationData.fullbackType === '边翼卫'" v-for="(pos, idx) in getPositions(1, 'WBR')" :key="'wb-right-'+idx" 
-                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                  :class="getPositionColor('WBR', idx)"
                                  @click="openPlayerSelect('WBR', idx)"
                             >
@@ -658,10 +657,10 @@
                     </div>
                     
                     <!-- 第5行：边后卫（左/右）+ 中卫（中路） -->
-                    <div class="flex justify-center items-center w-full gap-2">
-                        <div class="flex justify-center w-14">
+                    <div class="flex justify-center items-center w-full gap-1 px-1">
+                        <div class="flex justify-center w-10 flex-shrink-0">
                             <div v-if="formationData.fullbackType === '边后卫'" v-for="(pos, idx) in getPositions(1, 'DL')" :key="'fb-left-'+idx" 
-                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                  :class="getPositionColor('DL', idx)"
                                  @click="openPlayerSelect('DL', idx)"
                             >
@@ -669,9 +668,9 @@
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
-                            <div class="flex justify-center gap-3" :class="formationData.cb === 2 ? 'w-36' : 'w-52'">
+                            <div class="flex justify-center gap-2" :class="formationData.cb === 2 ? 'w-28' : 'w-40'">
                                 <div v-for="(pos, idx) in getPositions(formationData.cb, 'DC')" :key="'cb-'+idx" 
-                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                     class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                      :class="getPositionColor('DC', idx)"
                                      @click="openPlayerSelect('DC', idx)"
                                 >
@@ -679,9 +678,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-center w-14">
+                        <div class="flex justify-center w-10 flex-shrink-0">
                             <div v-if="formationData.fullbackType === '边后卫'" v-for="(pos, idx) in getPositions(1, 'DR')" :key="'fb-right-'+idx" 
-                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                                  :class="getPositionColor('DR', idx)"
                                  @click="openPlayerSelect('DR', idx)"
                             >
@@ -692,7 +691,7 @@
                     
                     <!-- 门将 -->
                     <div class="flex justify-center w-full">
-                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
                             :class="getPositionColor('GK', 0)"
                             @click="openPlayerSelect('GK', 0)"
                         >

@@ -21,7 +21,7 @@
         ></div>
       </div>
       <div class="flex justify-between text-xs text-gray-400 mt-1">
-        <span>未选的不会再抽到</span>
+        <span>未选/跳过的不会再抽到</span>
         <span>剩余 {{ availablePool.length }} 人</span>
       </div>
     </div>
@@ -56,19 +56,27 @@
             </div>
           </div>
           
-          <!-- ===== 底部确认按钮 ===== -->
-          <div class="mt-4 flex justify-center">
+          <!-- ===== 底部按钮 ===== -->
+          <div class="mt-4 flex justify-center gap-3">
             <button 
               @click="selectedId !== null ? signPlayer(currentCandidates.find(p => p.id === selectedId)) : null"
-              class="w-full py-3 rounded-2xl font-bold text-lg transition-all active:scale-95"
+              class="flex-1 py-3 rounded-2xl font-bold text-lg transition-all active:scale-95"
               :class="selectedId !== null ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
             >
               ✓ 
             </button>
+            <button 
+              @click="skipRound"
+              :disabled="skipCount <= 0 || currentCandidates.length === 0"
+              class="px-4 py-3 rounded-2xl font-bold text-lg transition-all active:scale-95 flex items-center gap-1"
+              :class="skipCount > 0 && currentCandidates.length > 0 ? 'bg-orange-500 text-white shadow-md' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+            >
+              跳过 ({{ skipCount }})
+            </button>
           </div>
           
           <div class="text-center text-xs text-gray-400 py-2">
-            点击球员查看详情，点击「✓」选择
+            点击球员查看详情，「✓」选择，「跳过」淘汰本轮5人
           </div>
 
           <!-- ===== 雷达图 ===== -->
@@ -131,45 +139,70 @@
 
       <!-- ===== 心态选择 ===== -->
       <div v-else-if="showMentality" class="bg-white rounded-2xl shadow-md p-6">
-        <h3 class="text-lg font-bold text-center text-gray-800 mb-2">🎯 选择比赛心态</h3>
-        <p class="text-xs text-center text-gray-400 mb-4">决定球队的整体比赛策略</p>
-        
-        <div class="space-y-3">
-          <div 
-            v-for="mentality in mentalities" 
-            :key="mentality.id"
-            @click="selectedMentality = mentality.id"
-            class="p-3 rounded-xl border-2 cursor-pointer transition-all active:scale-[0.98]"
-            :class="selectedMentality === mentality.id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-gray-800">{{ mentality.name }}</span>
-              <span v-if="selectedMentality === mentality.id" class="text-green-500 text-lg">✅</span>
-            </div>
-            <p class="text-xs text-gray-500 mt-1">{{ mentality.description }}</p>
+          <h3 class="text-lg font-bold text-center text-gray-800 mb-2">🎯 选择比赛心态</h3>
+          <p class="text-xs text-center text-gray-400 mb-2">决定球队的整体比赛策略</p>
+          <!-- 推荐心态提示 -->
+          <div v-if="getRecommendedMentality()" class="mb-3 p-2 bg-blue-50 rounded-xl text-center">
+              <span class="text-xs text-blue-600">推荐心态：</span>
+              <span class="text-sm font-bold text-blue-700">{{ getRecommendedMentality() }}</span>
+              <span class="text-xs text-gray-400 ml-2">（基于当前战术风格）</span>
           </div>
-        </div>
-        
-        <div class="flex gap-3 mt-4">
-          <button 
-            @click="showTactic = true; showMentality = false"
-            class="flex-1 py-3 bg-gray-200 rounded-xl font-bold active:scale-95 transition"
-          >
-            ← 返回
-          </button>
-          <button 
-            @click="confirmMentality"
-            :disabled="!selectedMentality"
-            class="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold active:scale-95 transition disabled:opacity-50"
-          >
-            确认心态 →
-          </button>
-        </div>
+          <div class="space-y-3">
+              <div 
+                  v-for="mentality in mentalities" 
+                  :key="mentality.id"
+                  @click="selectedMentality = mentality.id"
+                  class="p-3 rounded-xl border-2 cursor-pointer transition-all active:scale-[0.98]"
+                  :class="[
+                      selectedMentality === mentality.id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300',
+                      getRecommendedMentality() === mentality.name ? 'border-blue-400 bg-blue-50/50' : ''
+                  ]"
+              >
+                  <div class="flex items-center justify-between">
+                      <span class="font-bold text-gray-800">{{ mentality.name }}</span>
+                      <span v-if="selectedMentality === mentality.id" class="text-green-500 text-lg">✅</span>
+                      <span v-if="getRecommendedMentality() === mentality.name && selectedMentality !== mentality.id" class="text-xs text-blue-500">推荐</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">{{ mentality.description }}</p>
+              </div>
+          </div>
+          
+          <div class="flex gap-3 mt-4">
+              <button 
+                  @click="showTactic = true; showMentality = false"
+                  class="flex-1 py-3 bg-gray-200 rounded-xl font-bold active:scale-95 transition"
+              >
+                  ← 返回
+              </button>
+              <button 
+                  @click="confirmMentality"
+                  :disabled="!selectedMentality"
+                  class="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold active:scale-95 transition disabled:opacity-50"
+              >
+                  确认心态 →
+              </button>
+          </div>
       </div>
 
       <!-- ===== 阵型设置界面 ===== -->
       <div v-else-if="showFormation && !showFormationResult" class="bg-white rounded-2xl shadow-md p-6">
         <h3 class="text-lg font-bold text-center text-gray-800 mb-4">📋 设置阵型</h3>
+	
+        <!-- ===== 推荐阵型按钮 ===== -->
+        <div v-if="getRecommendedFormations().length > 0" class="mb-4">
+          <p class="text-sm text-gray-500 mb-2">推荐阵型（点击直接应用）</p>
+          <div class="flex flex-wrap gap-2">
+                <button 
+                    v-for="(fm, index) in getRecommendedFormations()" 
+                    :key="index"
+                    @click="applyFormation(fm.data)"
+                    class="px-4 py-2.5 text-sm bg-blue-500 text-white rounded-lg font-bold hover:bg-blue-600 transition active:scale-95"
+                >
+                    {{ fm.name }}
+              </button>
+          </div>
+        </div>
+
         <p class="text-xs text-center text-gray-400 mb-4">步骤 {{ formationStep + 1 }} / 8</p>
         
         <div class="flex gap-3 mb-3">
@@ -359,25 +392,28 @@
 
     <!-- ===== 最终结果 ===== -->
     <div v-else-if="showFormationResult" class="bg-white rounded-2xl shadow-md p-6">
-        <h3 class="text-lg font-bold text-center text-gray-800 mb-4">📊 </h3>
         
-        <!-- 战术风格 -->
-        <div class="mb-3 p-3 bg-gray-50 rounded-xl">
-            <p class="text-xs text-gray-500">战术风格</p>
-            <p class="font-bold text-gray-800">{{ getTacticName() }}</p>
-            <p class="text-xs text-gray-500 mt-1">{{ getTacticDescription() }}</p>
+        <!-- 战术风格 - 可点击重选 -->
+        <div class="mb-3 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition" @click="showTacticSelector = true">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-gray-500">战术风格</p>
+                <span class="text-xs text-blue-500">更换</span>
+            </div>
+            <p class="font-bold text-gray-800">{{ getTacticName() || '未选择' }}</p>
         </div>
         
-        <!-- 心态 -->
-        <div class="mb-3 p-3 bg-gray-50 rounded-xl">
-            <p class="text-xs text-gray-500">比赛心态</p>
-            <p class="font-bold text-gray-800">{{ getMentalityName() }}</p>
-            <p class="text-xs text-gray-500 mt-1">{{ getMentalityDescription() }}</p>
+        <!-- 心态 - 可点击重选 -->
+        <div class="mb-3 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition" @click="showMentalitySelector = true">
+            <div class="flex items-center justify-between">
+                <p class="text-xs text-gray-500">比赛心态</p>
+                <span class="text-xs text-blue-500">更换</span>
+            </div>
+            <p class="font-bold text-gray-800">{{ getMentalityName() || '未选择' }}</p>
         </div>
         
         <!-- 阵型图 -->
         <div class="mb-3 p-3 bg-gray-50 rounded-xl overflow-hidden">
-            <p class="text-xs text-gray-500 text-center mb-2"></p>
+            <p class="text-center font-bold text-[18px] text-gray-700 mb-2">选择首发</p>
             <div class="relative w-full aspect-[3/4] max-h-[380px] bg-gradient-to-b from-green-600 to-green-800 rounded-xl overflow-hidden">
                 <div class="absolute inset-0 flex flex-col items-center justify-between py-3 px-2">
                     
@@ -555,8 +591,8 @@
 
       <!-- ===== 选秀结束 ===== -->
       <div v-else-if="isDraftFinished && !showTactic && !showMentality && !showFormation && !showFormationResult" class="text-center py-12">
-        <div class="text-6xl mb-4">🎉</div>
-        <h3 class="text-xl font-bold text-gray-700">完成</h3>
+        <div class="text-6xl mb-4">完成</div>
+        <h3 class="text-xl font-bold text-gray-700"></h3>
         <p class="text-gray-500 mt-2">共 {{ myTeam.length }} 名球员</p>
         <button 
           @click="showTactic = true"
@@ -614,6 +650,54 @@
                 </div>
             </div>
             <button @click="closePlayerDetail" class="w-full mt-3 py-2 bg-gray-200 rounded-xl font-bold">关闭</button>
+        </div>
+    </div>
+
+    <!-- ===== 战术风格选择器（重选） ===== -->
+    <div v-if="showTacticSelector" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showTacticSelector = false">
+        <div class="bg-white rounded-2xl p-4 max-w-sm w-full mx-4 max-h-[70vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-center text-gray-800 mb-2">📋 选择战术风格</h3>
+            <p class="text-xs text-center text-gray-400 mb-4">点击选择新的战术风格</p>
+            <div class="space-y-2 max-h-[420px] overflow-y-auto">
+                <div 
+                    v-for="tactic in tactics" 
+                    :key="tactic.id"
+                    @click="selectedTactic = tactic.id; showTacticSelector = false"
+                    class="p-3 rounded-xl border-2 cursor-pointer transition-all active:scale-[0.98]"
+                    :class="selectedTactic === tactic.id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'"
+                >
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-gray-800">{{ tactic.name }}</span>
+                        <span v-if="selectedTactic === tactic.id" class="text-green-500 text-lg">✅</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">{{ tactic.description }}</p>
+                </div>
+            </div>
+            <button @click="showTacticSelector = false" class="w-full mt-3 py-2 bg-gray-200 rounded-xl font-bold">关闭</button>
+        </div>
+    </div>
+
+    <!-- ===== 心态选择器（重选） ===== -->
+    <div v-if="showMentalitySelector" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showMentalitySelector = false">
+        <div class="bg-white rounded-2xl p-4 max-w-sm w-full mx-4 max-h-[70vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-center text-gray-800 mb-2">🎯 选择比赛心态</h3>
+            <p class="text-xs text-center text-gray-400 mb-4">点击选择新的比赛心态</p>
+            <div class="space-y-2">
+                <div 
+                    v-for="mentality in mentalities" 
+                    :key="mentality.id"
+                    @click="selectedMentality = mentality.id; showMentalitySelector = false"
+                    class="p-3 rounded-xl border-2 cursor-pointer transition-all active:scale-[0.98]"
+                    :class="selectedMentality === mentality.id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'"
+                >
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-gray-800">{{ mentality.name }}</span>
+                        <span v-if="selectedMentality === mentality.id" class="text-green-500 text-lg">✅</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">{{ mentality.description }}</p>
+                </div>
+            </div>
+            <button @click="showMentalitySelector = false" class="w-full mt-3 py-2 bg-gray-200 rounded-xl font-bold">关闭</button>
         </div>
     </div>
 
@@ -788,7 +872,7 @@ const positionDisplayMap = {
 };
 
 // ==================== 游戏状态 ====================
-const totalRounds = 10;
+const totalRounds = 16;
 const currentRound = ref(1);
 const availablePool = ref([]);
 const myTeam = ref([]);
@@ -875,29 +959,29 @@ const canFinish = computed(() => {
 const getPositionColor = (positionCode, idx) => {
   const key = `${positionCode}_${idx}`;
   const assignment = positionAssignments.value[key];
-  if (!assignment) return 'bg-green-500';
+  if (!assignment) return 'bg-gray-500';
   
   const player = myTeam.value.find(p => p.id === assignment.playerId);
-  if (!player) return 'bg-green-500';
+  if (!player) return 'bg-gray-500';
   
   // 直接从 detailed_pos 读取
-  if (!player.detailed_pos) return 'bg-green-500';
+  if (!player.detailed_pos) return 'bg-gray-500';
   const value = player.detailed_pos[positionCode] || 0;
   
-  if (value >= 18) return 'bg-green-600';
-  if (value >= 15) return 'bg-green-400';
+  if (value >= 18) return 'bg-green-400';
+  if (value >= 15) return 'bg-green-600';
   if (value >= 12) return 'bg-yellow-400';
-  if (value >= 8) return 'bg-orange-400';
+  if (value >= 9) return 'bg-orange-400';
   if (value >= 4) return 'bg-red-400';
-  return 'bg-green-500';
+  return 'bg-gray-500';
 };
 
 const getValueColor = (value) => {
-  if (value >= 18) return 'text-green-600';
-  if (value >= 16) return 'text-green-400';
-  if (value >= 13) return 'text-yellow-500';
-  if (value >= 10) return 'text-orange-500';
-  return 'text-gray-400';
+  if (value >= 18) return 'text-green-400';
+  if (value >= 15) return 'text-green-600';
+  if (value >= 12) return 'text-yellow-500';
+  if (value >= 9) return 'text-orange-500';
+  return 'text-red-400';
 };
 
 // ==================== 阵型位置显示 ====================
@@ -1143,6 +1227,129 @@ const parseAbilityObject = (abilityStr) => {
     return result;
 };
 
+// ==================== 重选选择器状态 ====================
+const showTacticSelector = ref(false);
+const showMentalitySelector = ref(false);
+
+// ==================== 战术风格对应的推荐心态和阵型 ====================
+const tacticRecommendations = {
+  '控制球权': {
+    mentality: '攻守平衡',
+    formations: [
+      { name: '4-2-3-1 后腰', data: { cb: 2, fullbackType: '边后卫', cdm: 2, lmrm: 0, cm: 0, cam: 1, hasWingers: 2, st: 1 } },
+      { name: '4-3-3', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '5-2-3', data: { cb: 3, fullbackType: '边翼卫', cdm: 2, lmrm: 0, cm: 0, cam: 0, hasWingers: 2, st: 1 } }
+    ]
+  },
+  '高位压迫': {
+    mentality: '积极进取',
+    formations: [
+      { name: '4-2-3-1 后腰', data: { cb: 2, fullbackType: '边后卫', cdm: 2, lmrm: 0, cm: 0, cam: 1, hasWingers: 2, st: 1 } },
+      { name: '4-3-3', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '4-2-4 后腰', data: { cb: 2, fullbackType: '边后卫', cdm: 2, lmrm: 0, cm: 0, cam: 0, hasWingers: 2, st: 2 } }
+    ]
+  },
+  '密集短传': {
+    mentality: '积极进取',
+    formations: [
+      { name: '4-2-3-1 后腰', data: { cb: 2, fullbackType: '边后卫', cdm: 2, lmrm: 0, cm: 0, cam: 1, hasWingers: 2, st: 1 } },
+      { name: '4-3-3', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '5-2-3', data: { cb: 3, fullbackType: '边翼卫', cdm: 2, lmrm: 0, cm: 0, cam: 0, hasWingers: 2, st: 1 } }
+    ]
+  },
+  '垂直密集短传': {
+    mentality: '攻守平衡',
+    formations: [
+      { name: '4-2-3-1 后腰', data: { cb: 2, fullbackType: '边后卫', cdm: 2, lmrm: 0, cm: 0, cam: 1, hasWingers: 2, st: 1 } },
+      { name: '4-3-3', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '4-4-2 菱形', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 1, hasWingers: 0, st: 2 } }
+    ]
+  },
+  '双翼齐飞': {
+    mentality: '攻守平衡',
+    formations: [
+      { name: '4-4-2', data: { cb: 2, fullbackType: '边后卫', cdm: 0, lmrm: 2, cm: 2, cam: 0, hasWingers: 0, st: 2 } },
+      { name: '4-3-3', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '5-2-3', data: { cb: 3, fullbackType: '边翼卫', cdm: 2, lmrm: 0, cm: 0, cam: 0, hasWingers: 2, st: 1 } }
+    ]
+  },
+  '长传冲吊': {
+    mentality: '攻守平衡',
+    formations: [
+      { name: '4-4-2', data: { cb: 2, fullbackType: '边后卫', cdm: 0, lmrm: 2, cm: 2, cam: 0, hasWingers: 0, st: 2 } },
+      { name: '4-3-3', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '5-3-2', data: { cb: 3, fullbackType: '边翼卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 0, st: 2 } }
+    ]
+  },
+  '灵活防反': {
+    mentality: '小心谨慎',
+    formations: [
+      { name: '4-2-3-1 后腰', data: { cb: 2, fullbackType: '边后卫', cdm: 2, lmrm: 0, cm: 0, cam: 1, hasWingers: 2, st: 1 } },
+      { name: '4-3-3', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '5-3-2', data: { cb: 3, fullbackType: '边翼卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 0, st: 2 } }
+    ]
+  },
+  '快速防反': {
+    mentality: '小心谨慎',
+    formations: [
+      { name: '4-4-2', data: { cb: 2, fullbackType: '边后卫', cdm: 0, lmrm: 2, cm: 2, cam: 0, hasWingers: 0, st: 2 } },
+      { name: '4-3-3', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '5-2-3', data: { cb: 3, fullbackType: '边翼卫', cdm: 2, lmrm: 0, cm: 0, cam: 0, hasWingers: 2, st: 1 } }
+    ]
+  },
+  '链式防守': {
+    mentality: '防守',
+    formations: [
+      { name: '5-2-3', data: { cb: 3, fullbackType: '边翼卫', cdm: 2, lmrm: 0, cm: 0, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '5-2-1-2', data: { cb: 3, fullbackType: '边翼卫', cdm: 2, lmrm: 0, cm: 0, cam: 1, hasWingers: 0, st: 2 } },
+      { name: '5-2-2-1', data: { cb: 3, fullbackType: '边翼卫', cdm: 2, lmrm: 0, cm: 0, cam: 2, hasWingers: 0, st: 1 } }
+    ]
+  },
+  '摆大巴': {
+    mentality: '防守',
+    formations: [
+      { name: '4-4-2', data: { cb: 2, fullbackType: '边后卫', cdm: 0, lmrm: 2, cm: 2, cam: 0, hasWingers: 0, st: 2 } },
+      { name: '4-3-3', data: { cb: 2, fullbackType: '边后卫', cdm: 1, lmrm: 0, cm: 2, cam: 0, hasWingers: 2, st: 1 } },
+      { name: '4-2-4 后腰', data: { cb: 2, fullbackType: '边后卫', cdm: 2, lmrm: 0, cm: 0, cam: 0, hasWingers: 2, st: 2 } }
+    ]
+  }
+};
+
+// ==================== 跳过次数 ====================
+const maxSkipCount = 6;
+const skipCount = ref(maxSkipCount);
+
+// ==================== 跳过本轮 ====================
+const skipRound = () => {
+    if (skipCount.value <= 0) {
+        alert('已无跳过次数！');
+        return;
+    }
+    
+    if (currentCandidates.value.length === 0) {
+        return;
+    }
+    
+    // 从可用池中移除本轮候选人
+    const candidateIds = currentCandidates.value.map(p => p.id);
+    availablePool.value = availablePool.value.filter(p => !candidateIds.includes(p.id));
+    
+    // 减少跳过次数
+    skipCount.value -= 1;
+    
+   // 重新抽取候选人（不增加轮次）
+    if (availablePool.value.length === 0) {
+        currentCandidates.value = [];
+        isDraftFinished.value = true;
+        showTeam.value = true;
+        setTimeout(() => {
+            scrollToTeam();
+        }, 300);
+    } else {
+        fetchCandidates();
+    }
+};
+
 // ==================== 工具函数 ====================
 const hexToRgba = (hex, opacity) => {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -1176,9 +1383,48 @@ const getPositions = (count, label) => {
   return result;
 };
 
+// ==================== 获取当前战术风格名称 ====================
 const getTacticName = () => {
   const tactic = tactics.find(t => t.id === selectedTactic.value);
   return tactic ? tactic.name : '';
+};
+
+// ==================== 获取推荐心态 ====================
+const getRecommendedMentality = () => {
+  const tacticName = getTacticName();
+  const rec = tacticRecommendations[tacticName];
+  return rec ? rec.mentality : '';
+};
+
+// ==================== 心态确认 ====================
+const confirmMentality = () => {
+    if (!selectedMentality.value) return;
+    showMentality.value = false;
+    showFormation.value = true;
+};
+
+// ==================== 获取推荐阵型列表 ====================
+const getRecommendedFormations = () => {
+    const tacticName = getTacticName();
+    const rec = tacticRecommendations[tacticName];
+    return rec ? rec.formations : [];
+};
+
+// ==================== 应用推荐阵型 ====================
+const applyFormation = (fmData) => {
+    // 应用阵型数据
+    formationData.value.cb = fmData.cb;
+    formationData.value.fullbackType = fmData.fullbackType;
+    formationData.value.cdm = fmData.cdm;
+    formationData.value.lmrm = fmData.lmrm || 0;
+    formationData.value.cm = fmData.cm;
+    formationData.value.cam = fmData.cam || 0;
+    formationData.value.hasWingers = fmData.hasWingers;
+    formationData.value.st = fmData.st;
+    
+    // 直接跳转到最终结果
+    showFormation.value = false;
+    showFormationResult.value = true;
 };
 
 const getTacticDescription = () => {
@@ -1284,12 +1530,6 @@ const confirmTactic = () => {
   showMentality.value = true;
 };
 
-const confirmMentality = () => {
-  if (!selectedMentality.value) return;
-  showMentality.value = false;
-  showFormation.value = true;
-};
-
 // ==================== 阵型函数 ====================
 const nextStep = () => {
   if (!canNext.value) return;
@@ -1354,6 +1594,7 @@ const restartGame = () => {
   showError.value = false;
   errorMessage.value = '';
   showTeam.value = false;
+  skipCount.value = maxSkipCount; // 重置跳过次数
   fetchCandidates();
 };
 

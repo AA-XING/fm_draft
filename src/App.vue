@@ -384,9 +384,12 @@
                     <!-- 第1行：中锋（中路） -->
                     <div class="flex justify-center w-full">
                         <div class="flex justify-center gap-3" :class="formationData.st === 1 ? 'w-16' : formationData.st === 2 ? 'w-36' : 'w-52'">
-                            <div v-for="(pos, idx) in getPositions(formationData.st, '中锋')" :key="'st-'+idx" 
-                                 class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                
+                            <div v-for="(pos, idx) in getPositions(formationData.st, 'ST')" :key="'st-'+idx" 
+                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 :class="getPositionColor('ST', idx)"
+                                 @click="openPlayerSelect('ST', idx)"
+                            >
+                                {{ getPositionDisplay('ST', idx) }}
                             </div>
                         </div>
                     </div>
@@ -394,23 +397,32 @@
                     <!-- 第2行：边锋（左/右）+ 前腰（中路） -->
                     <div class="flex justify-center items-center w-full gap-2">
                         <div class="flex justify-center w-14">
-                            <div v-if="formationData.hasWingers >= 1" v-for="(pos, idx) in getPositions(1, '边锋')" :key="'w-left-'+idx" 
-                                 class="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                
+                            <div v-if="formationData.hasWingers >= 1" v-for="(pos, idx) in getPositions(1, 'AML')" :key="'w-left-'+idx" 
+                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 :class="getPositionColor('AML', idx)"
+                                 @click="openPlayerSelect('AML', idx)"
+                            >
+                                {{ getPositionDisplay('AML', idx) }}
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
                             <div class="flex justify-center gap-3" :class="formationData.cam === 1 ? 'w-16' : formationData.cam === 2 ? 'w-36' : 'w-52'">
-                                <div v-for="(pos, idx) in getPositions(formationData.cam, '前腰')" :key="'cam-'+idx" 
-                                     class="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                    
+                                <div v-for="(pos, idx) in getPositions(formationData.cam, 'AMC')" :key="'cam-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                     :class="getPositionColor('AMC', idx)"
+                                     @click="openPlayerSelect('AMC', idx)"
+                                >
+                                    {{ getPositionDisplay('AMC', idx) }}
                                 </div>
                             </div>
                         </div>
                         <div class="flex justify-center w-14">
-                            <div v-if="formationData.hasWingers >= 2" v-for="(pos, idx) in getPositions(1, '边锋')" :key="'w-right-'+idx" 
-                                 class="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                
+                            <div v-if="formationData.hasWingers >= 2" v-for="(pos, idx) in getPositions(1, 'AMR')" :key="'w-right-'+idx" 
+                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 :class="getPositionColor('AMR', idx)"
+                                 @click="openPlayerSelect('AMR', idx)"
+                            >
+                                {{ getPositionDisplay('AMR', idx) }}
                             </div>
                         </div>
                     </div>
@@ -418,23 +430,32 @@
                     <!-- 第3行：边前卫（左/右）+ 中场（中路） -->
                     <div class="flex justify-center items-center w-full gap-2">
                         <div class="flex justify-center w-14">
-                            <div v-if="formationData.lmrm >= 1" v-for="(pos, idx) in getPositions(1, '边前卫')" :key="'lmrm-left-'+idx" 
-                                 class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                
+                            <div v-if="formationData.lmrm >= 1" v-for="(pos, idx) in getPositions(1, 'ML')" :key="'lmrm-left-'+idx" 
+                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 :class="getPositionColor('ML', idx)"
+                                 @click="openPlayerSelect('ML', idx)"
+                            >
+                                {{ getPositionDisplay('ML', idx) }}
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
                             <div class="flex justify-center gap-3" :class="formationData.cm === 1 ? 'w-16' : formationData.cm === 2 ? 'w-36' : 'w-52'">
-                                <div v-for="(pos, idx) in getPositions(formationData.cm, '中场')" :key="'cm-'+idx" 
-                                     class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                    
+                                <div v-for="(pos, idx) in getPositions(formationData.cm, 'MC')" :key="'cm-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                     :class="getPositionColor('MC', idx)"
+                                     @click="openPlayerSelect('MC', idx)"
+                                >
+                                    {{ getPositionDisplay('MC', idx) }}
                                 </div>
                             </div>
                         </div>
                         <div class="flex justify-center w-14">
-                            <div v-if="formationData.lmrm >= 2" v-for="(pos, idx) in getPositions(1, '边前卫')" :key="'lmrm-right-'+idx" 
-                                 class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                
+                            <div v-if="formationData.lmrm >= 2" v-for="(pos, idx) in getPositions(1, 'MR')" :key="'lmrm-right-'+idx" 
+                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 :class="getPositionColor('MR', idx)"
+                                 @click="openPlayerSelect('MR', idx)"
+                            >
+                                {{ getPositionDisplay('MR', idx) }}
                             </div>
                         </div>
                     </div>
@@ -442,23 +463,32 @@
                     <!-- 第4行：边翼卫（左/右）+ 后腰（中路） -->
                     <div class="flex justify-center items-center w-full gap-2">
                         <div class="flex justify-center w-14">
-                            <div v-if="formationData.fullbackType === '边翼卫'" v-for="(pos, idx) in getPositions(1, '边翼卫')" :key="'wb-left-'+idx" 
-                                 class="w-8 h-8 rounded-full bg-cyan-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                
+                            <div v-if="formationData.fullbackType === '边翼卫'" v-for="(pos, idx) in getPositions(1, 'WBL')" :key="'wb-left-'+idx" 
+                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 :class="getPositionColor('WBL', idx)"
+                                 @click="openPlayerSelect('WBL', idx)"
+                            >
+                                {{ getPositionDisplay('WBL', idx) }}
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
                             <div class="flex justify-center gap-3" :class="formationData.cdm === 1 ? 'w-16' : formationData.cdm === 2 ? 'w-36' : 'w-52'">
-                                <div v-for="(pos, idx) in getPositions(formationData.cdm, '后腰')" :key="'cdm-'+idx" 
-                                     class="w-8 h-8 rounded-full bg-cyan-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                    
+                                <div v-for="(pos, idx) in getPositions(formationData.cdm, 'DM')" :key="'cdm-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                     :class="getPositionColor('DM', idx)"
+                                     @click="openPlayerSelect('DM', idx)"
+                                >
+                                    {{ getPositionDisplay('DM', idx) }}
                                 </div>
                             </div>
                         </div>
                         <div class="flex justify-center w-14">
-                            <div v-if="formationData.fullbackType === '边翼卫'" v-for="(pos, idx) in getPositions(1, '边翼卫')" :key="'wb-right-'+idx" 
-                                 class="w-8 h-8 rounded-full bg-cyan-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                
+                            <div v-if="formationData.fullbackType === '边翼卫'" v-for="(pos, idx) in getPositions(1, 'WBR')" :key="'wb-right-'+idx" 
+                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 :class="getPositionColor('WBR', idx)"
+                                 @click="openPlayerSelect('WBR', idx)"
+                            >
+                                {{ getPositionDisplay('WBR', idx) }}
                             </div>
                         </div>
                     </div>
@@ -466,31 +496,40 @@
                     <!-- 第5行：边后卫（左/右）+ 中卫（中路） -->
                     <div class="flex justify-center items-center w-full gap-2">
                         <div class="flex justify-center w-14">
-                            <div v-if="formationData.fullbackType === '边后卫'" v-for="(pos, idx) in getPositions(1, '边后卫')" :key="'fb-left-'+idx" 
-                                 class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                
+                            <div v-if="formationData.fullbackType === '边后卫'" v-for="(pos, idx) in getPositions(1, 'DL')" :key="'fb-left-'+idx" 
+                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 :class="getPositionColor('DL', idx)"
+                                 @click="openPlayerSelect('DL', idx)"
+                            >
+                                {{ getPositionDisplay('DL', idx) }}
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
                             <div class="flex justify-center gap-3" :class="formationData.cb === 2 ? 'w-36' : 'w-52'">
-                                <div v-for="(pos, idx) in getPositions(formationData.cb, '中卫')" :key="'cb-'+idx" 
-                                     class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                    
+                                <div v-for="(pos, idx) in getPositions(formationData.cb, 'DC')" :key="'cb-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                     :class="getPositionColor('DC', idx)"
+                                     @click="openPlayerSelect('DC', idx)"
+                                >
+                                    {{ getPositionDisplay('DC', idx) }}
                                 </div>
                             </div>
                         </div>
                         <div class="flex justify-center w-14">
-                            <div v-if="formationData.fullbackType === '边后卫'" v-for="(pos, idx) in getPositions(1, '边后卫')" :key="'fb-right-'+idx" 
-                                 class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                                
+                            <div v-if="formationData.fullbackType === '边后卫'" v-for="(pos, idx) in getPositions(1, 'DR')" :key="'fb-right-'+idx" 
+                                 class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                                 :class="getPositionColor('DR', idx)"
+                                 @click="openPlayerSelect('DR', idx)"
+                            >
+                                {{ getPositionDisplay('DR', idx) }}
                             </div>
                         </div>
                     </div>
                     
                     <!-- 门将 -->
                     <div class="flex justify-center w-full">
-                        <div class="w-9 h-9 rounded-full bg-purple-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
-                            
+                        <div class="w-9 h-9 rounded-full bg-purple-400 flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30">
+                            GK
                         </div>
                     </div>
                 </div>
@@ -528,6 +567,56 @@
       </div>
     </div>
 
+    <!-- ===== 球员选择弹出框 ===== -->
+    <div v-if="showPlayerSelect" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="closePlayerSelect">
+        <div class="bg-white rounded-2xl p-4 max-w-sm w-full mx-4 max-h-[70vh] overflow-y-auto">
+            <h4 class="font-bold text-center text-gray-800 mb-3">选择 {{ currentPositionName }} 球员</h4>
+            <div class="space-y-2">
+                <div 
+                    v-for="player in availablePlayersForPosition" 
+                    :key="player.id"
+                    @click="assignPlayerToPosition(player)"
+                    class="p-2 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition flex items-center justify-between"
+                    :class="{ 'border-2 border-blue-400': isPlayerOnField(player.id) && !isCurrentPosition(player.id) }"
+                >
+                    <div>
+                        <span class="font-medium text-sm">#{{ getPlayerIndex(player) }} {{ player.name }}</span>
+                        <span class="text-xs text-gray-400 ml-2">{{ player.position }}</span>
+                        <span v-if="isPlayerOnField(player.id) && !isCurrentPosition(player.id)" class="text-xs text-blue-600 font-bold ml-1">(已上阵)</span>
+                    </div>
+                    <span class="text-xs font-bold" :class="getValueColor(getPlayerPositionValue(player, currentPositionCode))">
+                        {{ getPlayerPositionValue(player, currentPositionCode) }}
+                    </span>
+                </div>
+                <div v-if="availablePlayersForPosition.length === 0" class="text-center text-gray-400 py-4">
+                    没有合适的球员
+                </div>
+            </div>
+            <button @click="closePlayerSelect" class="w-full mt-3 py-2 bg-gray-200 rounded-xl font-bold">关闭</button>
+        </div>
+    </div>
+
+    <!-- ===== 球员详情弹出框（八维图） ===== -->
+    <div v-if="showPlayerDetail" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="closePlayerDetail">
+        <div class="bg-white rounded-2xl p-4 max-w-sm w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-3">
+                <h4 class="font-bold text-gray-800">{{ detailPlayer?.name || '球员' }}</h4>
+                <span class="text-xs text-gray-400">{{ detailPlayer?.position || '' }}</span>
+            </div>
+            <div class="w-full" style="height: 300px; position: relative;">
+                <Radar 
+                    :data="detailRadarData" 
+                    :options="detailRadarOptions"
+                    v-if="detailRadarData && detailRadarData.labels && detailRadarData.labels.length > 0"
+                />
+                <div v-else class="flex items-center justify-center h-full text-gray-400 text-sm">
+                    暂无能力数据
+                </div>
+            </div>
+            <button @click="closePlayerDetail" class="w-full mt-3 py-2 bg-gray-200 rounded-xl font-bold">关闭</button>
+        </div>
+    </div>
+
     <!-- ===== 底部：我的球队 ===== -->
     <div 
       ref="teamSection"
@@ -548,8 +637,8 @@
         </div>
         <span class="text-gray-400 text-sm">{{ showTeam ? '收起 ▲' : '展开 ▼' }}</span>
       </div>
-  
-      <!-- 球队名单 - 去掉rating列 -->
+
+      <!-- 球队名单 -->
       <div 
         v-if="showTeam && myTeam.length > 0" 
         class="mt-2 flex-1 overflow-y-auto space-y-1 min-h-0"
@@ -557,11 +646,13 @@
         <div 
           v-for="(p, idx) in myTeam" 
           :key="idx" 
-          class="flex items-center gap-2 p-2 bg-gray-50 rounded-xl text-sm"
+          class="flex items-center gap-2 p-2 bg-gray-50 rounded-xl text-sm cursor-pointer hover:bg-gray-100 transition"
+          @click="openPlayerDetail(p)"
         >
           <span class="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">{{ idx + 1 }}</span>
           <span class="font-medium">{{ p.name }}</span>
           <span class="text-xs text-gray-400 flex-shrink-0">{{ p.position }}</span>
+          <span v-if="isPlayerOnField(p.id)" class="text-xs text-green-600 font-bold ml-auto flex-shrink-0">上阵</span>
         </div>
       </div>
       <div v-else-if="showTeam && myTeam.length === 0" class="mt-2 text-sm text-gray-400 text-center py-4 flex-1">
@@ -584,7 +675,6 @@ import {
   Legend
 } from 'chart.js';
 
-// ===== 导入球员数据 =====
 import fieldPlayersData from './data/fieldPlayers.json';
 
 ChartJS.register(
@@ -637,16 +727,11 @@ const radarOptions = {
   }
 };
 
-// ==================== 颜色方案 ====================
 const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
-
-// ==================== 八维维度 ====================
 const abilityKeys = ['防守', '身体', '速度', '创造', '进攻', '技术', '制空', '精神'];
-
-// ===== 从 JSON 文件读取球员数据 =====
 const PLAYER_DATA = fieldPlayersData;
 
-// ==================== 战术风格数据 ====================
+// ==================== 战术/心态数据 ====================
 const tactics = [
   { id: 1, name: '控制球权', description: '旨在控制比赛节奏，耐心等待对方的破绽' },
   { id: 2, name: '高位压迫', description: '立即回抢球权，高强度的跑动' },
@@ -659,8 +744,6 @@ const tactics = [
   { id: 9, name: '链式防守', description: '试图完全扼杀对方的进攻威胁，极度严谨的防守策略' },
   { id: 10, name: '摆大巴', description: '靠后而严谨的防守队形，限制后场空间' }
 ];
-
-// ==================== 心态数据 ====================
 const mentalities = [
   { id: 1, name: '全力防守', description: '这种心态的目的是以压缩空间，放慢节奏，保持控球，尽可能消耗时间的方式折磨对手并降低风险。不同于防守心态的是，球队反击时不求得分，只求不丢球。因为控球和消磨是首要目的，更多球员会保持在球后方。' },
   { id: 2, name: '防守', description: '如果预期会输掉比赛，并且防线将承受巨大压力，推荐采用该种心态。球队会以防守为主，通过限制本方半场的空间，破坏对手的进攻节奏。继而通过快速的传球在反击中寻找破门机会。' },
@@ -670,6 +753,39 @@ const mentalities = [
   { id: 6, name: '进攻', description: '这种比赛心态适用于球队被看好，并且在对手半场保持住球权的比赛。球队会在进攻中利用快速的节奏和更多的直传寻求对手后场的空当。如果球队在进攻中容易丢球，则需要改用多多倒球的战术保持球权。这一心态的重点在于让球员会抓住可能的机会找空当前插，并给他们施展才华的自由。' },
   { id: 7, name: '全力进攻', description: '这种比赛心态适用于球队孤注一掷需要取得进球时。球队会保持极高的节奏和极为直接的传递，以求持续向对手后场试压。防守中利用夺回球权的机会穿透防线。在进攻时，则寄希望于利用压到前场的人数优势找到空当破门得分。' }
 ];
+
+// ==================== 阵型位置映射 ====================
+const positionAbbrMap = {
+  'ST': 'ST',
+  'AML': 'AML',
+  'AMC': 'AMC',
+  'AMR': 'AMR',
+  'ML': 'ML',
+  'MC': 'MC',
+  'MR': 'MR',
+  'WBL': 'WBL',
+  'DM': 'DM',
+  'WBR': 'WBR',
+  'DL': 'DL',
+  'DC': 'DC',
+  'DR': 'DR'
+};
+
+const positionDisplayMap = {
+  'ST': '中锋',
+  'AML': '左边锋',
+  'AMC': '前腰',
+  'AMR': '右边锋',
+  'ML': '左前卫',
+  'MC': '中场',
+  'MR': '右前卫',
+  'WBL': '左边翼卫',
+  'DM': '后腰',
+  'WBR': '右边翼卫',
+  'DL': '左后卫',
+  'DC': '中卫',
+  'DR': '右后卫'
+};
 
 // ==================== 游戏状态 ====================
 const totalRounds = 10;
@@ -701,6 +817,13 @@ const formationData = ref({
   hasWingers: 0,
   st: 1
 });
+
+// ==================== 球员位置分配 ====================
+const positionAssignments = ref({});
+const showPlayerSelect = ref(false);
+const currentPositionCode = ref('');
+const currentPositionIdx = ref(0);
+
 const showError = ref(false);
 const errorMessage = ref('');
 
@@ -748,6 +871,278 @@ const canFinish = computed(() => {
   return true;
 });
 
+// ==================== 位置颜色函数 ====================
+const getPositionColor = (positionCode, idx) => {
+  const key = `${positionCode}_${idx}`;
+  const assignment = positionAssignments.value[key];
+  if (!assignment) return 'bg-green-500';
+  
+  const player = myTeam.value.find(p => p.id === assignment.playerId);
+  if (!player) return 'bg-green-500';
+  
+  // 直接从 detailed_pos 读取
+  if (!player.detailed_pos) return 'bg-green-500';
+  const value = player.detailed_pos[positionCode] || 0;
+  
+  if (value >= 18) return 'bg-green-600';
+  if (value >= 15) return 'bg-green-400';
+  if (value >= 12) return 'bg-yellow-400';
+  if (value >= 8) return 'bg-orange-400';
+  if (value >= 4) return 'bg-red-400';
+  return 'bg-green-500';
+};
+
+const getValueColor = (value) => {
+  if (value >= 18) return 'text-green-600';
+  if (value >= 16) return 'text-green-400';
+  if (value >= 13) return 'text-yellow-500';
+  if (value >= 10) return 'text-orange-500';
+  return 'text-gray-400';
+};
+
+// ==================== 阵型位置显示 ====================
+const getPositionDisplay = (positionCode, idx) => {
+  const key = `${positionCode}_${idx}`;
+  const assignment = positionAssignments.value[key];
+  if (!assignment) return positionAbbrMap[positionCode] || positionCode;
+  
+  const player = myTeam.value.find(p => p.id === assignment.playerId);
+  if (!player) return positionAbbrMap[positionCode] || positionCode;
+  
+  const playerIdx = myTeam.value.indexOf(player);
+  // 只显示球员编号，不显示姓名首字母
+  return `${playerIdx + 1}`;
+};
+
+// ==================== 获取球员在队伍中的序号 ====================
+const getPlayerIndex = (player) => {
+    if (!player || !myTeam.value) return 0;
+    const index = myTeam.value.indexOf(player);
+    return index >= 0 ? index + 1 : 0;
+};
+
+// ==================== 获取球员在指定位置的适应性值 ====================
+const getPlayerPositionValue = (player, positionCode) => {
+    // 优先使用 detailed_pos
+    if (player.detailed_pos && player.detailed_pos[positionCode] !== undefined) {
+        return player.detailed_pos[positionCode];
+    }
+    
+    // 如果没有 detailed_pos，使用映射表作为备用
+    const positionFitMap = {
+        'ST': { ST: 18, AML: 12, AMC: 14, AMR: 12, ML: 6, MC: 10, MR: 6, WBL: 4, DM: 4, WBR: 4, DL: 4, DC: 4, DR: 4 },
+        'CF': { ST: 16, AML: 10, AMC: 12, AMR: 10, ML: 6, MC: 8, MR: 6, WBL: 4, DM: 4, WBR: 4, DL: 4, DC: 4, DR: 4 },
+        'LW': { ST: 10, AML: 18, AMC: 12, AMR: 14, ML: 12, MC: 8, MR: 10, WBL: 6, DM: 4, WBR: 6, DL: 4, DC: 4, DR: 4 },
+        'RW': { ST: 10, AML: 14, AMC: 12, AMR: 18, ML: 10, MC: 8, MR: 12, WBL: 6, DM: 4, WBR: 6, DL: 4, DC: 4, DR: 4 },
+        'AM': { ST: 12, AML: 14, AMC: 18, AMR: 14, ML: 10, MC: 12, MR: 10, WBL: 6, DM: 6, WBR: 6, DL: 4, DC: 4, DR: 4 },
+        'CAM': { ST: 12, AML: 14, AMC: 18, AMR: 14, ML: 10, MC: 12, MR: 10, WBL: 6, DM: 6, WBR: 6, DL: 4, DC: 4, DR: 4 },
+        'CM': { ST: 8, AML: 8, AMC: 12, AMR: 8, ML: 10, MC: 18, MR: 10, WBL: 6, DM: 10, WBR: 6, DL: 6, DC: 6, DR: 6 },
+        'MC': { ST: 8, AML: 8, AMC: 12, AMR: 8, ML: 10, MC: 18, MR: 10, WBL: 6, DM: 10, WBR: 6, DL: 6, DC: 6, DR: 6 },
+        'CDM': { ST: 4, AML: 4, AMC: 8, AMR: 4, ML: 6, MC: 12, MR: 6, WBL: 8, DM: 18, WBR: 8, DL: 6, DC: 8, DR: 6 },
+        'LB': { ST: 4, AML: 8, AMC: 6, AMR: 8, ML: 10, MC: 8, MR: 10, WBL: 14, DM: 6, WBR: 10, DL: 18, DC: 10, DR: 10 },
+        'RB': { ST: 4, AML: 8, AMC: 6, AMR: 8, ML: 10, MC: 8, MR: 10, WBL: 10, DM: 6, WBR: 14, DL: 10, DC: 10, DR: 18 },
+        'CB': { ST: 4, AML: 4, AMC: 4, AMR: 4, ML: 4, MC: 6, MR: 4, WBL: 6, DM: 8, WBR: 6, DL: 10, DC: 18, DR: 10 },
+        'GK': { ST: 2, AML: 2, AMC: 2, AMR: 2, ML: 2, MC: 2, MR: 2, WBL: 2, DM: 2, WBR: 2, DL: 2, DC: 2, DR: 2 }
+    };
+    
+    const pos = player.position || '';
+    const fit = positionFitMap[pos];
+    if (!fit) return 0;
+    return fit[positionCode] || 0;
+};
+
+// ==================== 可用的球员(下拉菜单) ====================
+const availablePlayersForPosition = computed(() => {
+    const positionCode = currentPositionCode.value;
+    const assignedPlayerIds = new Set();
+    
+    // 收集已被其他位置占用的球员ID（当前选中位置除外）
+    for (const [key, val] of Object.entries(positionAssignments.value)) {
+        const [pos, idx] = key.split('_');
+        if (pos === positionCode && parseInt(idx) === currentPositionIdx.value) {
+            continue;
+        }
+        assignedPlayerIds.add(val.playerId);
+    }
+    
+    // 过滤出可用的球员（不排除已被占用的）
+    return myTeam.value.filter(p => {
+        // 检查 detailed_pos
+        if (!p.detailed_pos) return false;
+        
+        const value = p.detailed_pos[positionCode];
+        
+        // 值 >= 4 才显示
+        return value !== undefined && value >= 4;
+    });
+});
+
+// ==================== 球员选择弹出框 ====================
+const openPlayerSelect = (positionCode, idx) => {
+  currentPositionCode.value = positionCode;
+  currentPositionIdx.value = idx;
+  showPlayerSelect.value = true;
+};
+
+const closePlayerSelect = () => {
+  showPlayerSelect.value = false;
+};
+
+const assignPlayerToPosition = (player) => {
+  const key = `${currentPositionCode.value}_${currentPositionIdx.value}`;
+  
+  // 检查该球员是否已被其他位置占用
+  let oldKey = null;
+  for (const [k, val] of Object.entries(positionAssignments.value)) {
+    if (val.playerId === player.id && k !== key) {
+      oldKey = k;
+      break;
+    }
+  }
+  
+  // 如果球员已被其他位置占用，从原位置移除
+  if (oldKey) {
+    delete positionAssignments.value[oldKey];
+  }
+  
+  // 分配到新位置
+  positionAssignments.value[key] = {
+    playerId: player.id,
+    positionCode: currentPositionCode.value
+  };
+  
+  closePlayerSelect();
+};
+
+// ==================== 判断球员是否已上阵 ====================
+const isPlayerOnField = (playerId) => {
+  for (const [key, val] of Object.entries(positionAssignments.value)) {
+    if (val.playerId === playerId) return true;
+  }
+  return false;
+};
+
+// ==================== 判断球员是否在当前编辑位置 ====================
+const isCurrentPosition = (playerId) => {
+    const key = `${currentPositionCode.value}_${currentPositionIdx.value}`;
+    const assignment = positionAssignments.value[key];
+    if (!assignment) return false;
+    return assignment.playerId === playerId;
+};
+
+// ==================== 详情雷达图配置 ====================
+const detailRadarOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+        r: {
+            min: 0,
+            max: 20,
+            ticks: {
+                stepSize: 4,
+                font: { size: 10 },
+                backdropColor: 'transparent'
+            },
+            pointLabels: {
+                font: { size: 12 }
+            },
+            grid: {
+                color: 'rgba(0,0,0,0.1)'
+            },
+            angleLines: {
+                color: 'rgba(0,0,0,0.08)'
+            }
+        }
+    },
+    plugins: {
+        legend: {
+            display: false
+        }
+    },
+    elements: {
+        line: {
+            tension: 0,
+            borderWidth: 2
+        },
+        point: {
+            radius: 2,
+            hoverRadius: 4
+        }
+    }
+};
+
+// ==================== 球员详情弹出框 ====================
+const showPlayerDetail = ref(false);
+const detailPlayer = ref(null);
+
+// ==================== 详情雷达图数据 ====================
+const detailRadarData = computed(() => {
+    if (!detailPlayer.value) {
+        return { labels: [], datasets: [] };
+    }
+    
+    // 使用和主雷达图相同的 abilityKeys
+    const labels = abilityKeys;
+    const data = labels.map(key => detailPlayer.value.abilities?.[key] || 0);
+    
+    return {
+        labels: labels,
+        datasets: [{
+            label: detailPlayer.value.name || '球员',
+            data: data,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: '#36A2EB',
+            borderWidth: 2,
+            pointBackgroundColor: '#36A2EB',
+            pointRadius: 3
+        }]
+    };
+});
+
+
+// ==================== 详情颜色辅助 ====================
+const getDetailValueColor = (value) => {
+    if (value >= 16) return 'text-green-600';
+    if (value >= 13) return 'text-green-400';
+    if (value >= 10) return 'text-yellow-500';
+    if (value >= 7) return 'text-orange-500';
+    return 'text-red-500';
+};
+
+// ==================== 球员详情弹出框控制 ====================
+const openPlayerDetail = (player) => {
+    detailPlayer.value = player;
+    showPlayerDetail.value = true;
+};
+
+const closePlayerDetail = () => {
+    showPlayerDetail.value = false;
+    detailPlayer.value = null;
+};
+
+// ==================== 解析 ability 字符串 ====================
+const parseAbilityObject = (abilityStr) => {
+    const result = {};
+    if (!abilityStr) return result;
+    
+    if (typeof abilityStr === 'string' && abilityStr.includes(',')) {
+        const pairs = abilityStr.split(',').map(s => s.trim());
+        pairs.forEach(pair => {
+            const parts = pair.split(' ');
+            const key = parts.slice(0, -1).join(' ');
+            const value = parseFloat(parts[parts.length - 1]);
+            if (key && !isNaN(value)) {
+                result[key] = value;
+            }
+        });
+    } else if (typeof abilityStr === 'object') {
+        Object.keys(abilityStr).forEach(key => {
+            result[key] = abilityStr[key];
+        });
+    }
+    return result;
+};
+
 // ==================== 工具函数 ====================
 const hexToRgba = (hex, opacity) => {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -765,7 +1160,22 @@ const shuffleArray = (arr) => {
   return shuffled;
 };
 
-// ==================== 战术/心态辅助函数 ====================
+const getPositions = (count, label) => {
+  if (count === 0) return [];
+  const result = [];
+  if (count === 1) {
+    result.push('center');
+  } else if (count === 2) {
+    result.push('left', 'right');
+  } else if (count >= 3) {
+    result.push('left', 'center', 'right');
+    for (let i = 3; i < count; i++) {
+      result.push('center-' + i);
+    }
+  }
+  return result;
+};
+
 const getTacticName = () => {
   const tactic = tactics.find(t => t.id === selectedTactic.value);
   return tactic ? tactic.name : '';
@@ -784,36 +1194,6 @@ const getMentalityName = () => {
 const getMentalityDescription = () => {
   const mentality = mentalities.find(m => m.id === selectedMentality.value);
   return mentality ? mentality.description : '';
-};
-
-// ==================== 阵型辅助函数 ====================
-const getPositions = (count, label) => {
-  if (count === 0) return [];
-  const result = [];
-  if (count === 1) {
-    result.push('center');
-  } else if (count === 2) {
-    result.push('left', 'right');
-  } else if (count >= 3) {
-    result.push('left', 'center', 'right');
-    for (let i = 3; i < count; i++) {
-      result.push('center-' + i);
-    }
-  }
-  return result;
-};
-
-const getFormationDisplay = () => {
-  const cb = formationData.value.cb || 0;
-  const fb = formationData.value.fullbackType === '边后卫' ? 2 : 0;
-  const wb = formationData.value.fullbackType === '边翼卫' ? 2 : 0;
-  const cdm = formationData.value.cdm || 0;
-  const lmrm = formationData.value.lmrm || 0;
-  const cm = formationData.value.cm || 0;
-  const cam = formationData.value.cam || 0;
-  const w = formationData.value.hasWingers || 0;
-  const st = formationData.value.st || 0;
-  return `${cb}-${fb + wb}-${cdm}-${lmrm}-${cm}-${cam}-${w}-${st}`;
 };
 
 // ==================== 核心函数 ====================
@@ -927,6 +1307,7 @@ const resetFormation = () => {
   showFormationResult.value = false;
   showFormation.value = true;
   formationStep.value = 0;
+  positionAssignments.value = {};
   formationData.value = {
     cb: 2,
     fullbackType: '边后卫',
@@ -958,6 +1339,7 @@ const restartGame = () => {
   selectedTactic.value = null;
   selectedMentality.value = null;
   formationStep.value = 0;
+  positionAssignments.value = {};
   formationData.value = {
     cb: 2,
     fullbackType: '边后卫',

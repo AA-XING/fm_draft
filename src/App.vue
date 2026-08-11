@@ -21,7 +21,7 @@
         ></div>
       </div>
       <div class="flex justify-between text-xs text-gray-400 mt-1">
-        <span>第 {{ currentRound }} 轮</span>
+        <span>未选的不会再抽到</span>
         <span>剩余 {{ availablePool.length }} 人</span>
       </div>
     </div>
@@ -549,7 +549,7 @@
         <span class="text-gray-400 text-sm">{{ showTeam ? '收起 ▲' : '展开 ▼' }}</span>
       </div>
   
-      <!-- 球队名单 - 这个容器会占满剩余空间并滚动 -->
+      <!-- 球队名单 - 去掉rating列 -->
       <div 
         v-if="showTeam && myTeam.length > 0" 
         class="mt-2 flex-1 overflow-y-auto space-y-1 min-h-0"
@@ -562,7 +562,6 @@
           <span class="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">{{ idx + 1 }}</span>
           <span class="font-medium">{{ p.name }}</span>
           <span class="text-xs text-gray-400 flex-shrink-0">{{ p.position }}</span>
-          <span class="text-green-600 font-bold ml-auto flex-shrink-0">{{ p.rating }}</span>
         </div>
       </div>
       <div v-else-if="showTeam && myTeam.length === 0" class="mt-2 text-sm text-gray-400 text-center py-4 flex-1">

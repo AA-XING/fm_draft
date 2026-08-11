@@ -2,109 +2,233 @@
   <div class="flex flex-col h-screen max-w-md mx-auto bg-gradient-to-b from-gray-50 to-gray-200 font-sans relative">
     
     <!-- ===== 顶部状态栏 ===== -->
-    <div class="bg-white/90 backdrop-blur p-4 shadow-sm z-10 flex-shrink-0">
-      <div class="flex justify-between items-center">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl">⚽</span>
-          <span class="text-xl font-bold text-transparent">　</span>
+    <div v-if="!showHome && !showTactic && !showMentality && !showFormation && !showFormationResult" class="bg-white/90 backdrop-blur p-4 shadow-sm z-10 flex-shrink-0">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">⚽</span>
+                <span class="text-xl font-bold text-transparent">　</span>
+            </div>
+            <div class="text-right">
+                <span class="text-sm text-gray-500">已选</span>
+                <span class="font-bold text-green-600 text-lg ml-1">{{ myTeam.length }}</span>
+                <span class="text-gray-400 text-sm">/ {{ totalRounds + gkRounds }}</span>
+            </div>
         </div>
-        <div class="text-right">
-          <span class="text-sm text-gray-500">已选</span>
-          <span class="font-bold text-green-600 text-lg ml-1">{{ myTeam.length }}</span>
-          <span class="text-gray-400 text-sm">/ {{ totalRounds }}</span>
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+            <div 
+                class="h-2.5 rounded-full transition-all duration-500"
+                :class="getProgressColor()"
+                :style="{ width: getProgressWidth() }"
+            ></div>
         </div>
-      </div>
-      <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-        <div 
-          class="bg-gradient-to-r from-green-400 to-emerald-500 h-2.5 rounded-full transition-all duration-500" 
-          :style="{ width: (currentRound/totalRounds)*100 + '%' }"
-        ></div>
-      </div>
-      <div class="flex justify-between text-xs text-gray-400 mt-1">
-        <span>未选/跳过的不会再抽到</span>
-        <span>剩余 {{ availablePool.length }} 人</span>
-      </div>
+        <div class="flex justify-between text-xs text-gray-400 mt-1">
+            <span>未选/跳过的不会再抽到</span>
+            <span>剩余 {{ getRemainingCount() }} 人</span>
+        </div>
+    </div>
+
+    <!-- ===== 首页 ===== -->
+    <div v-if="showHome && !isDraftFinished && !showTactic && !showMentality && !showFormation && !showFormationResult" class="flex-1 flex flex-col items-center justify-center p-6">
+        <div class="text-6xl mb-6">⚽</div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2"></h1>
+        <div class="flex flex-col gap-4 w-full max-w-xs">
+            <button 
+                @click="startSimulation"
+                class="w-full py-4 bg-green-500 text-white rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition"
+            >
+                模拟
+            </button>
+            <button 
+                @click="showLogin = true"
+                class="w-full py-4 bg-blue-500 text-white rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition"
+            >
+                对抗
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== 登录弹窗 ===== -->
+    <div v-if="showLogin" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="showLogin = false">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4">
+            <h3 class="text-lg font-bold text-center text-gray-800 mb-2">⚔️ 对战模式</h3>
+            <p class="text-xs text-center text-gray-400 mb-4">请输入用户名</p>
+            <input 
+                v-model="loginUsername"
+                type="text"
+                placeholder="请输入用户名"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl text-center focus:outline-none focus:border-blue-500"
+                @keyup.enter="confirmLogin"
+            />
+            <div v-if="loginError" class="text-red-500 text-xs text-center mt-2">{{ loginError }}</div>
+            <div class="flex gap-3 mt-4">
+                <button 
+                    @click="showLogin = false; loginUsername = ''; loginError = ''"
+                    class="flex-1 py-2 bg-gray-200 rounded-xl font-bold active:scale-95 transition"
+                >
+                    取消
+                </button>
+                <button 
+                    @click="confirmLogin"
+                    class="flex-1 py-2 bg-blue-500 text-white rounded-xl font-bold active:scale-95 transition"
+                >
+                    确认
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- ===== 中部内容 ===== -->
     <div class="flex-1 overflow-y-auto p-4">
       
       <!-- ===== 选秀界面 ===== -->
-      <div v-if="!isDraftFinished && !showTactic && !showMentality && !showFormation && !showFormationResult">
-        <div v-if="currentCandidates.length > 0">
-          <!-- 球员表格 -->
-          <div class="space-y-3">
-            <div class="flex items-center text-xs text-gray-400 px-3 py-1">
-              <span class="flex-1 pl-2">球员</span>
-              <span class="w-20 text-center">位置</span>
-            </div>
+      <div v-if="!showHome && !isDraftFinished && !showTactic && !showMentality && !showFormation && !showFormationResult">
+          <!-- 阶段提示 -->
+          <div class="text-center text-sm font-bold mb-3 px-3 py-2 rounded-xl" :class="getStageHintClass()">
+              {{ getStageHint() }}
+          </div>
+          <!-- 常规球员选秀 -->
+          <div v-if="!isGKRound && currentCandidates.length > 0">
+              <!-- 球员表格 -->
+              <div class="space-y-3">
+                  <div class="flex items-center text-xs text-gray-400 px-3 py-1">
+                      <span class="flex-1 pl-2">球员</span>
+                      <span class="w-20 text-center">位置</span>
+                  </div>
 
-            <div 
-              v-for="(player, idx) in currentCandidates" 
-              :key="player.id"
-              class="bg-white rounded-2xl shadow-md p-3 flex items-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
-              :class="{ 'border-2 border-green-400': selectedId === player.id }"
-              @click="selectedId = player.id"
-            >
-              <div class="flex-1 min-w-0 pl-2">
-                <div class="font-bold text-gray-800 text-sm truncate">{{ player.name }}</div>
-                <div class="text-xs text-gray-400 truncate">{{ player.club || '' }}</div>
+                  <div 
+                      v-for="(player, idx) in currentCandidates" 
+                      :key="player.id"
+                      class="bg-white rounded-2xl shadow-md p-3 flex items-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
+                      :class="{ 'border-2 border-green-400': selectedId === player.id }"
+                      @click="selectedId = player.id"
+                  >
+                      <div class="flex-1 min-w-0 pl-2">
+                          <div class="font-bold text-gray-800 text-sm truncate">{{ player.name }}</div>
+                          <div class="text-xs text-gray-400 truncate">{{ player.club || '' }}</div>
+                      </div>
+                      <div class="w-20 text-center flex-shrink-0">
+                          <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ player.position }}</span>
+                      </div>
+                  </div>
               </div>
-              <div class="w-20 text-center flex-shrink-0">
-                <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ player.position }}</span>
+
+              <!-- 底部按钮 -->
+              <div class="mt-4 flex justify-center gap-3">
+                  <button 
+                      @click="selectedId !== null ? signPlayer(currentCandidates.find(p => p.id === selectedId)) : null"
+                      class="flex-1 py-3 rounded-2xl font-bold text-lg transition-all active:scale-95"
+                      :class="selectedId !== null ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                  >
+                      ✓ 
+                  </button>
+                  <button 
+                      @click="skipRound"
+                      :disabled="skipCount <= 0 || currentCandidates.length === 0"
+                      class="px-4 py-3 rounded-2xl font-bold text-lg transition-all active:scale-95 flex items-center gap-1"
+                      :class="skipCount > 0 && currentCandidates.length > 0 ? 'bg-orange-500 text-white shadow-md' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                  >
+                      跳过 ({{ skipCount }})
+                  </button>
               </div>
-            </div>
-          </div>
-          
-          <!-- ===== 底部按钮 ===== -->
-          <div class="mt-4 flex justify-center gap-3">
-            <button 
-              @click="selectedId !== null ? signPlayer(currentCandidates.find(p => p.id === selectedId)) : null"
-              class="flex-1 py-3 rounded-2xl font-bold text-lg transition-all active:scale-95"
-              :class="selectedId !== null ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
-            >
-              ✓ 
-            </button>
-            <button 
-              @click="skipRound"
-              :disabled="skipCount <= 0 || currentCandidates.length === 0"
-              class="px-4 py-3 rounded-2xl font-bold text-lg transition-all active:scale-95 flex items-center gap-1"
-              :class="skipCount > 0 && currentCandidates.length > 0 ? 'bg-orange-500 text-white shadow-md' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
-            >
-              跳过 ({{ skipCount }})
-            </button>
-          </div>
-          
-          <div class="text-center text-xs text-gray-400 py-2">
-            点击球员查看详情，「✓」选择，「跳过」淘汰本轮5人
+
+              <div class="text-center text-xs text-gray-400 py-2">
+                  点击球员查看详情，「✓」选择，「跳过」淘汰本轮5人
+              </div>
+
+              <!-- 雷达图 -->
+              <div class="mt-4 bg-white rounded-2xl shadow-md p-3">
+                  <div class="text-xs text-gray-400 text-center mb-1">————</div>
+                  <div class="w-full" style="height: 280px; position: relative;">
+                      <Radar 
+                          :data="radarData" 
+                          :options="radarOptions"
+                      />
+                  </div>
+                  <div class="flex flex-wrap gap-2 justify-center mt-2">
+                      <div 
+                          v-for="(player, idx) in currentCandidates" 
+                          :key="idx"
+                          class="flex items-center gap-1 text-xs cursor-pointer px-2 py-1 rounded-full transition-all"
+                          :class="selectedId === player.id ? 'bg-green-100 font-bold' : 'hover:bg-gray-100 opacity-70'"
+                          @click="selectedId = player.id"
+                      >
+                          <span 
+                              class="w-3 h-3 rounded-full" 
+                              :style="{ backgroundColor: colors[idx % colors.length] }"
+                          ></span>
+                          <span :class="{ 'font-bold': selectedId === player.id }">{{ player.name }}</span>
+                      </div>
+                  </div>
+              </div>
           </div>
 
-          <!-- ===== 雷达图 ===== -->
-          <div class="mt-4 bg-white rounded-2xl shadow-md p-3">
-            <div class="text-xs text-gray-400 text-center mb-1">————</div>
-            <div class="w-full" style="height: 280px; position: relative;">
-              <Radar 
-                :data="radarData" 
-                :options="radarOptions"
-              />
-            </div>
-            <div class="flex flex-wrap gap-2 justify-center mt-2">
-              <div 
-                v-for="(player, idx) in currentCandidates" 
-                :key="idx"
-                class="flex items-center gap-1 text-xs cursor-pointer px-2 py-1 rounded-full transition-all"
-                :class="selectedId === player.id ? 'bg-green-100 font-bold' : 'hover:bg-gray-100 opacity-70'"
-                @click="selectedId = player.id"
-              >
-                <span 
-                  class="w-3 h-3 rounded-full" 
-                  :style="{ backgroundColor: colors[idx % colors.length] }"
-                ></span>
-                <span :class="{ 'font-bold': selectedId === player.id }">{{ player.name }}</span>
+          <!-- 门将选秀 -->
+          <div v-else-if="isGKRound && gkCandidates.length > 0">
+              <div class="text-center text-sm font-bold text-blue-600 mb-3"></div>
+              <!-- 球员表格 -->
+              <div class="space-y-3">
+                  <div class="flex items-center text-xs text-gray-400 px-3 py-1">
+                      <span class="flex-1 pl-2">门将</span>
+                      <span class="w-20 text-center">位置</span>
+                  </div>
+                  <div 
+                      v-for="(player, idx) in gkCandidates" 
+                      :key="player.id"
+                      class="bg-white rounded-2xl shadow-md p-3 flex items-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
+                      :class="{ 'border-2 border-green-400': gkSelectedId === player.id }"
+                      @click="gkSelectedId = player.id"
+                  >
+                      <div class="flex-1 min-w-0 pl-2">
+                          <div class="font-bold text-gray-800 text-sm truncate">{{ player.name }}</div>
+                          <div class="text-xs text-gray-400 truncate">{{ player.club || '' }}</div>
+                      </div>
+                      <div class="w-20 text-center flex-shrink-0">
+                          <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ player.position }}</span>
+                      </div>
+                  </div>
               </div>
-            </div>
+
+              <!-- 底部按钮 -->
+              <div class="mt-4 flex justify-center gap-3">
+                  <button 
+                      @click="gkSelectedId !== null ? signGK(gkCandidates.find(p => p.id === gkSelectedId)) : null"
+                      class="flex-1 py-3 rounded-2xl font-bold text-lg transition-all active:scale-95"
+                      :class="gkSelectedId !== null ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+                  >
+                      ✓ 
+                  </button>
+              </div>
+
+              <div class="text-center text-xs text-gray-400 py-2">
+                  点击门将查看详情，点击「✓」选择
+              </div>
+
+              <!-- 门将雷达图 -->
+              <div class="mt-4 bg-white rounded-2xl shadow-md p-3">
+                  <div class="text-xs text-gray-400 text-center mb-1">————</div>
+                  <div class="w-full" style="height: 280px; position: relative;">
+                      <Radar 
+                          :data="gkRadarData" 
+                          :options="radarOptions"
+                      />
+                  </div>
+                  <div class="flex flex-wrap gap-2 justify-center mt-2">
+                      <div 
+                          v-for="(player, idx) in gkCandidates" 
+                          :key="idx"
+                          class="flex items-center gap-1 text-xs cursor-pointer px-2 py-1 rounded-full transition-all"
+                          :class="gkSelectedId === player.id ? 'bg-green-100 font-bold' : 'hover:bg-gray-100 opacity-70'"
+                          @click="gkSelectedId = player.id"
+                      >
+                          <span 
+                              class="w-3 h-3 rounded-full" 
+                              :style="{ backgroundColor: colors[idx % colors.length] }"
+                          ></span>
+                          <span :class="{ 'font-bold': gkSelectedId === player.id }">{{ player.name }}</span>
+                      </div>
+                  </div>
+              </div>
           </div>
-        </div>
       </div>
 
       <!-- ===== 战术风格选择 ===== -->
@@ -412,6 +536,7 @@
         </div>
         
         <!-- 阵型图 -->
+        <!-- 阵型图 -->
         <div class="mb-3 p-3 bg-gray-50 rounded-xl overflow-hidden">
             <p class="text-center font-bold text-[18px] text-gray-700 mb-2">选择首发</p>
             <div class="relative w-full aspect-[3/4] max-h-[380px] bg-gradient-to-b from-green-600 to-green-800 rounded-xl overflow-hidden">
@@ -432,6 +557,7 @@
                     
                     <!-- 第2行：边锋（左/右）+ 前腰（中路） -->
                     <div class="flex justify-center items-center w-full gap-2">
+                        <!-- 左路：边锋 -->
                         <div class="flex justify-center w-14">
                             <div v-if="formationData.hasWingers >= 1" v-for="(pos, idx) in getPositions(1, 'AML')" :key="'w-left-'+idx" 
                                  class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
@@ -441,6 +567,7 @@
                                 {{ getPositionDisplay('AML', idx) }}
                             </div>
                         </div>
+                        <!-- 中路：前腰 -->
                         <div class="flex justify-center flex-1">
                             <div class="flex justify-center gap-3" :class="formationData.cam === 1 ? 'w-16' : formationData.cam === 2 ? 'w-36' : 'w-52'">
                                 <div v-for="(pos, idx) in getPositions(formationData.cam, 'AMC')" :key="'cam-'+idx" 
@@ -452,6 +579,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- 右路：边锋 -->
                         <div class="flex justify-center w-14">
                             <div v-if="formationData.hasWingers >= 2" v-for="(pos, idx) in getPositions(1, 'AMR')" :key="'w-right-'+idx" 
                                  class="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
@@ -564,8 +692,11 @@
                     
                     <!-- 门将 -->
                     <div class="flex justify-center w-full">
-                        <div class="w-9 h-9 rounded-full bg-purple-400 flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30">
-                            GK
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-bold text-white shadow-lg border-2 border-white/30 cursor-pointer"
+                            :class="getPositionColor('GK', 0)"
+                            @click="openPlayerSelect('GK', 0)"
+                        >
+                            {{ getPositionDisplay('GK', 0) }}
                         </div>
                     </div>
                 </div>
@@ -581,10 +712,18 @@
                 🔄 阵型
             </button>
             <button 
+                v-if="!isBattleMode"
                 @click="restartGame"
                 class="flex-1 py-3 bg-green-500 text-white rounded-xl font-bold active:scale-95 transition"
             >
                 🔄 选人
+            </button>
+            <button 
+                v-else
+                @click="submitTeam"
+                class="flex-1 py-3 bg-purple-500 text-white rounded-xl font-bold active:scale-95 transition"
+            >
+                📤 提交阵容
             </button>
         </div>
     </div>
@@ -702,12 +841,12 @@
     </div>
 
     <!-- ===== 底部：我的球队 ===== -->
-    <div 
+    <div v-if="!showHome" 
       ref="teamSection"
       class="bg-white/90 backdrop-blur p-3 shadow-inner flex-shrink-0 transition-all duration-500 flex flex-col"
       :class="[
         myTeam.length === totalRounds ? 'border-t-4 border-green-500' : '',
-        showTeam ? 'h-[35vh]' : 'h-auto'
+        showTeam ? 'h-[45vh]' : 'h-auto'
       ]"
     >
       <div 
@@ -719,7 +858,23 @@
           <span class="font-medium text-gray-700">我的球队</span>
           <span class="bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{ myTeam.length }}</span>
         </div>
-        <span class="text-gray-400 text-sm">{{ showTeam ? '收起 ▲' : '展开 ▼' }}</span>
+        <!-- ===== 位置统计 ===== -->
+        <div class="flex items-center gap-2 text-xs">
+          <span class="flex items-center gap-0.5">
+            <span class="text-blue-600 font-bold">{{ getPositionCount('defender') }}</span>
+            <span class="text-gray-400">后卫</span>
+          </span>
+          <span class="text-gray-300">|</span>
+          <span class="flex items-center gap-0.5">
+            <span class="text-yellow-600 font-bold">{{ getPositionCount('midfielder') }}</span>
+            <span class="text-gray-400">中场</span>
+          </span>
+          <span class="text-gray-300">|</span>
+          <span class="flex items-center gap-0.5">
+            <span class="text-red-600 font-bold">{{ getPositionCount('forward') }}</span>
+            <span class="text-gray-400">前锋</span>
+          </span>
+        </div>
       </div>
 
       <!-- 球队名单 -->
@@ -760,6 +915,8 @@ import {
 } from 'chart.js';
 
 import fieldPlayersData from './data/fieldPlayers.json';
+import gkPlayersData from './data/gkPlayers.json';
+import usersData from './data/users.json';
 
 ChartJS.register(
   RadialLinearScale,
@@ -770,14 +927,37 @@ ChartJS.register(
   Legend
 );
 
+// ==================== 首页/对战状态 ====================
+const showHome = ref(true);
+const showLogin = ref(false);
+const loginUsername = ref('');
+const loginError = ref('');
+const isBattleMode = ref(false);
+const currentUser = ref('');
+
+// ==================== 门将相关的游戏状态 ====================
+const gkPool = ref([]);
+const isGKRound = ref(false);  // 当前是否处于门将选择轮
+const gkRounds = 2;  // 门将选择轮数
+const gkSelectedCount = ref(0);  // 已选门将数
+const gkCandidates = ref([]);  // 当前门将候选
+const gkSelectedId = ref(null);
+
+// ==================== 八维维度 ====================
+const abilityKeys = ['防守', '身体', '速度', '创造', '进攻', '技术', '制空', '精神'];
+const gkAbilityKeys = ['拦截射门', '身体', '速度', '精神', '指挥防守', '意外性', '制空', '大脚'];
+
+const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
+const PLAYER_DATA = fieldPlayersData;
+
 // ==================== 雷达图配置 ====================
 const radarOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
     r: {
-      min: 4,
-      max: 20,
+      min: 2,
+      max: 18,
       ticks: {
         stepSize: 4,
         font: { size: 10 },
@@ -811,10 +991,6 @@ const radarOptions = {
   }
 };
 
-const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
-const abilityKeys = ['防守', '身体', '速度', '创造', '进攻', '技术', '制空', '精神'];
-const PLAYER_DATA = fieldPlayersData;
-
 // ==================== 战术/心态数据 ====================
 const tactics = [
   { id: 1, name: '控制球权', description: '旨在控制比赛节奏，耐心等待对方的破绽' },
@@ -840,35 +1016,37 @@ const mentalities = [
 
 // ==================== 阵型位置映射 ====================
 const positionAbbrMap = {
-  'ST': 'ST',
-  'AML': 'AML',
-  'AMC': 'AMC',
-  'AMR': 'AMR',
-  'ML': 'ML',
-  'MC': 'MC',
-  'MR': 'MR',
-  'WBL': 'WBL',
-  'DM': 'DM',
-  'WBR': 'WBR',
-  'DL': 'DL',
-  'DC': 'DC',
-  'DR': 'DR'
+    'GK': 'GK',
+    'ST': 'ST',
+    'AML': 'AML',
+    'AMC': 'AMC',
+    'AMR': 'AMR',
+    'ML': 'ML',
+    'MC': 'MC',
+    'MR': 'MR',
+    'WBL': 'WBL',
+    'DM': 'DM',
+    'WBR': 'WBR',
+    'DL': 'DL',
+    'DC': 'DC',
+    'DR': 'DR'
 };
 
 const positionDisplayMap = {
-  'ST': '中锋',
-  'AML': '左边锋',
-  'AMC': '前腰',
-  'AMR': '右边锋',
-  'ML': '左前卫',
-  'MC': '中场',
-  'MR': '右前卫',
-  'WBL': '左边翼卫',
-  'DM': '后腰',
-  'WBR': '右边翼卫',
-  'DL': '左后卫',
-  'DC': '中卫',
-  'DR': '右后卫'
+    'GK': '门将',
+    'ST': '中锋',
+    'AML': '左边锋',
+    'AMC': '前腰',
+    'AMR': '右边锋',
+    'ML': '左前卫',
+    'MC': '中场',
+    'MR': '右前卫',
+    'WBL': '左边翼卫',
+    'DM': '后腰',
+    'WBR': '右边翼卫',
+    'DL': '左后卫',
+    'DC': '中卫',
+    'DR': '右后卫'
 };
 
 // ==================== 游戏状态 ====================
@@ -957,23 +1135,23 @@ const canFinish = computed(() => {
 
 // ==================== 位置颜色函数 ====================
 const getPositionColor = (positionCode, idx) => {
-  const key = `${positionCode}_${idx}`;
-  const assignment = positionAssignments.value[key];
-  if (!assignment) return 'bg-gray-500';
-  
-  const player = myTeam.value.find(p => p.id === assignment.playerId);
-  if (!player) return 'bg-gray-500';
-  
-  // 直接从 detailed_pos 读取
-  if (!player.detailed_pos) return 'bg-gray-500';
-  const value = player.detailed_pos[positionCode] || 0;
-  
-  if (value >= 18) return 'bg-green-400';
-  if (value >= 15) return 'bg-green-600';
-  if (value >= 12) return 'bg-yellow-400';
-  if (value >= 9) return 'bg-orange-400';
-  if (value >= 4) return 'bg-red-400';
-  return 'bg-gray-500';
+    const key = `${positionCode}_${idx}`;
+    const assignment = positionAssignments.value[key];
+    if (!assignment) return 'bg-gray-500';
+    
+    const player = myTeam.value.find(p => p.id === assignment.playerId);
+    if (!player) return 'bg-gray-500';
+    
+    // 直接从 detailed_pos 读取
+    if (!player.detailed_pos) return 'bg-gray-500';
+    const value = player.detailed_pos[positionCode] || 0;
+    
+    if (value >= 18) return 'bg-green-400';
+    if (value >= 15) return 'bg-green-600';
+    if (value >= 12) return 'bg-yellow-400';
+    if (value >= 9) return 'bg-orange-400';
+    if (value >= 4) return 'bg-red-400';
+    return 'bg-gray-500';
 };
 
 const getValueColor = (value) => {
@@ -1014,6 +1192,7 @@ const getPlayerPositionValue = (player, positionCode) => {
     
     // 如果没有 detailed_pos，使用映射表作为备用
     const positionFitMap = {
+        'GK': { GK: 20, ST: 2, AML: 2, AMC: 2, AMR: 2, ML: 2, MC: 2, MR: 2, WBL: 2, DM: 2, WBR: 2, DL: 2, DC: 2, DR: 2 },
         'ST': { ST: 18, AML: 12, AMC: 14, AMR: 12, ML: 6, MC: 10, MR: 6, WBL: 4, DM: 4, WBR: 4, DL: 4, DC: 4, DR: 4 },
         'CF': { ST: 16, AML: 10, AMC: 12, AMR: 10, ML: 6, MC: 8, MR: 6, WBL: 4, DM: 4, WBR: 4, DL: 4, DC: 4, DR: 4 },
         'LW': { ST: 10, AML: 18, AMC: 12, AMR: 14, ML: 12, MC: 8, MR: 10, WBL: 6, DM: 4, WBR: 6, DL: 4, DC: 4, DR: 4 },
@@ -1025,9 +1204,9 @@ const getPlayerPositionValue = (player, positionCode) => {
         'CDM': { ST: 4, AML: 4, AMC: 8, AMR: 4, ML: 6, MC: 12, MR: 6, WBL: 8, DM: 18, WBR: 8, DL: 6, DC: 8, DR: 6 },
         'LB': { ST: 4, AML: 8, AMC: 6, AMR: 8, ML: 10, MC: 8, MR: 10, WBL: 14, DM: 6, WBR: 10, DL: 18, DC: 10, DR: 10 },
         'RB': { ST: 4, AML: 8, AMC: 6, AMR: 8, ML: 10, MC: 8, MR: 10, WBL: 10, DM: 6, WBR: 14, DL: 10, DC: 10, DR: 18 },
-        'CB': { ST: 4, AML: 4, AMC: 4, AMR: 4, ML: 4, MC: 6, MR: 4, WBL: 6, DM: 8, WBR: 6, DL: 10, DC: 18, DR: 10 },
-        'GK': { ST: 2, AML: 2, AMC: 2, AMR: 2, ML: 2, MC: 2, MR: 2, WBL: 2, DM: 2, WBR: 2, DL: 2, DC: 2, DR: 2 }
+        'CB': { ST: 4, AML: 4, AMC: 4, AMR: 4, ML: 4, MC: 6, MR: 4, WBL: 6, DM: 8, WBR: 6, DL: 10, DC: 18, DR: 10 }
     };
+    // 删除了重复的 'GK' 条目
     
     const pos = player.position || '';
     const fit = positionFitMap[pos];
@@ -1120,8 +1299,8 @@ const detailRadarOptions = {
     maintainAspectRatio: false,
     scales: {
         r: {
-            min: 0,
-            max: 20,
+            min: 2,
+            max: 18,
             ticks: {
                 stepSize: 4,
                 font: { size: 10 },
@@ -1165,12 +1344,25 @@ const detailRadarData = computed(() => {
         return { labels: [], datasets: [] };
     }
     
-    // 使用和主雷达图相同的 abilityKeys
-    const labels = abilityKeys;
+    // 判断是否为门将（根据 position 字段或 isGK 标记）
+    const isGK = detailPlayer.value.position === 'GK' || detailPlayer.value.isGK === true;
+    
+    // 选择对应的能力键和显示标签
+    let labels, displayLabels;
+    if (isGK) {
+        labels = gkAbilityKeys;
+        // 将 '制空2' 映射显示为 '制空'
+        displayLabels = labels.map(key => key === '制空2' ? '制空' : key);
+    } else {
+        labels = abilityKeys;
+        displayLabels = labels;
+    }
+    
+    // 获取能力数据
     const data = labels.map(key => detailPlayer.value.abilities?.[key] || 0);
     
     return {
-        labels: labels,
+        labels: displayLabels,
         datasets: [{
             label: detailPlayer.value.name || '球员',
             data: data,
@@ -1350,6 +1542,287 @@ const skipRound = () => {
     }
 };
 
+// ==================== 位置统计 ====================
+const getPositionCount = (type) => {
+    if (myTeam.value.length === 0) return 0;
+    
+    const positionGroups = {
+        defender: ['DL', 'DC', 'DR', 'WBL', 'WBR'],
+        midfielder: ['DM', 'MC', 'ML', 'MR', 'AMC'],
+        forward: ['AML', 'ST', 'AMR']
+    };
+    
+    const targetPositions = positionGroups[type] || [];
+    
+    // 统计球员：一个球员在某个组中只要有一个位置值 >= 15 就计数
+    let count = 0;
+    const countedPlayers = new Set();
+    
+    myTeam.value.forEach(player => {
+        // 检查球员是否有 detailed_pos
+        if (!player.detailed_pos) return;
+        
+        // 检查该球员是否在目标位置中有值 >= 15
+        let matched = false;
+        for (const pos of targetPositions) {
+            if (player.detailed_pos[pos] && player.detailed_pos[pos] >= 15) {
+                matched = true;
+                break;
+            }
+        }
+        
+        if (matched && !countedPlayers.has(player.id)) {
+            countedPlayers.add(player.id);
+            count++;
+        }
+    });
+    
+    return count;
+};
+
+// ==================== 门将相关函数 ====================
+// 获取门将候选
+const fetchGKCandidates = () => {
+    if (gkPool.value.length === 0) {
+        gkCandidates.value = [];
+        return;
+    }
+    
+    // 根据门将选择轮次确定 rating 过滤范围
+    let filtered = [];
+    if (gkSelectedCount.value === 0) {
+        // 第一个门将：rating >= 146
+        filtered = gkPool.value.filter(p => p.rating >= 146);
+    } else {
+        // 第二个门将：125 <= rating <= 145
+        filtered = gkPool.value.filter(p => p.rating >= 125 && p.rating <= 145);
+    }
+    
+    // 如果过滤后没有球员，放宽限制（防止卡死）
+    if (filtered.length === 0) {
+        filtered = gkPool.value;
+        console.warn('没有符合条件的门将，已放宽限制');
+    }
+    
+    const shuffled = shuffleArray(filtered);
+    const count = Math.min(3, shuffled.length);
+    gkCandidates.value = shuffled.slice(0, count).map((player, idx) => ({
+        ...player,
+        color: colors[idx % colors.length]
+    }));
+    gkSelectedId.value = gkCandidates.value.length > 0 ? gkCandidates.value[0].id : null;
+};
+
+// 选择门将
+const signGK = (player) => {
+    if (isSelecting.value) return;
+    isSelecting.value = true;
+    myTeam.value.push(player);
+    
+    const candidateIds = gkCandidates.value.map(p => p.id);
+    gkPool.value = gkPool.value.filter(p => !candidateIds.includes(p.id));
+    
+    gkSelectedCount.value += 1;
+    
+    if (navigator.vibrate) navigator.vibrate(30);
+    
+    setTimeout(() => {
+        isSelecting.value = false;
+        if (gkSelectedCount.value >= gkRounds || gkPool.value.length === 0) {
+            // 门将选择完成，进入阵型设置
+            isGKRound.value = false;
+            gkCandidates.value = [];
+            isDraftFinished.value = true;
+            showTeam.value = true;
+            setTimeout(() => {
+                scrollToTeam();
+            }, 300);
+        } else {
+            fetchGKCandidates();
+        }
+    }, 300);
+};
+
+// ==================== 进度条辅助函数 ====================
+// 获取进度宽度（百分比）
+const getProgressWidth = () => {
+    // 总轮数 = 常规球员16轮 + 门将2轮 = 18轮
+    const total = totalRounds + gkRounds;
+    const selected = myTeam.value.length;
+    return Math.min((selected / total) * 100, 100) + '%';
+};
+
+// 获取进度条颜色
+const getProgressColor = () => {
+    const total = totalRounds + gkRounds;
+    const selected = myTeam.value.length;
+    const progress = selected / total;
+    
+    // 0-10轮：绿色，11-16轮：蓝色，17-18轮：黄色
+    if (selected <= 10) {
+        return 'bg-green-500';
+    } else if (selected <= 16) {
+        return 'bg-blue-500';
+    } else {
+        return 'bg-yellow-500';
+    }
+};
+
+// 获取剩余人数
+const getRemainingCount = () => {
+    const total = totalRounds + gkRounds;
+    const selected = myTeam.value.length;
+    // 计算剩余球员 = 总球员数 - 已选球员数
+    return Math.max(availablePool.value.length + gkPool.value.length, 0);
+};
+
+// ==================== 选秀阶段提示 ====================
+const getStageHint = () => {
+    const total = totalRounds + gkRounds;
+    const selected = myTeam.value.length;
+    
+    // 门将选择阶段
+    if (isGKRound.value) {
+        if (gkSelectedCount.value === 0) {
+            return '选择主力门将';
+        } else {
+            return '选择替补门将';
+        }
+    }
+    
+    // 常规选秀阶段
+    if (selected < 10) {
+        return '选择主力球员';
+    } else if (selected < 16) {
+        return '选择替补球员';
+    }
+    return '';
+};
+
+// ==================== 提示颜色 ====================
+const getStageHintClass = () => {
+    const selected = myTeam.value.length;
+    
+    if (isGKRound.value) {
+        if (gkSelectedCount.value === 0) {
+            return 'bg-purple-100 text-purple-700';
+        } else {
+            return 'bg-yellow-100 text-yellow-700';
+        }
+    }
+    
+    if (selected < 10) {
+        return 'bg-green-100 text-green-700';
+    } else if (selected < 16) {
+        return 'bg-blue-100 text-blue-700';
+    }
+    return 'bg-gray-100 text-gray-700';
+};
+
+// ==================== 首页函数 ====================
+const startSimulation = () => {
+    isBattleMode.value = false;
+    showHome.value = false;
+    // 初始化选秀
+    const initialPlayers = PLAYER_DATA.map(p => ({ ...p }));
+    availablePool.value = shuffleArray(initialPlayers);
+    fetchCandidates();
+};
+
+const confirmLogin = () => {
+    const name = loginUsername.value.trim();
+    if (!name) {
+        loginError.value = '请输入用户名';
+        return;
+    }
+    // 检查用户名是否在允许列表中
+    if (!usersData.includes(name)) {
+        loginError.value = '用户名不存在，请重新输入';
+        return;
+    }
+    loginError.value = '';
+    currentUser.value = name;
+    showLogin.value = false;
+    isBattleMode.value = true;
+    showHome.value = false;
+    // 初始化选秀
+    const initialPlayers = PLAYER_DATA.map(p => ({ ...p }));
+    availablePool.value = shuffleArray(initialPlayers);
+    fetchCandidates();
+};
+
+// ==================== 提交阵容 ====================
+const submitTeam = async () => {
+    // 收集球员信息
+    const teamInfo = myTeam.value.map(p => ({
+        name: p.name,
+        position: p.position,
+        rating: p.rating
+    }));
+    
+    // 收集阵型位置分配
+    const formationAssignments = [];
+    for (const [key, val] of Object.entries(positionAssignments.value)) {
+        const [pos, idx] = key.split('_');
+        const player = myTeam.value.find(p => p.id === val.playerId);
+        if (player) {
+            formationAssignments.push({
+                position: pos,
+                player: player.name,
+                playerId: val.playerId
+            });
+        }
+    }
+    
+    // 生成复制文本
+    let text = '═══════════════════════════════════\n';
+    text += `  阵容提交\n`;
+    text += `  用户: ${currentUser.value || '模拟模式'}\n`;
+    text += `  ${new Date().toLocaleString()}\n`;
+    text += '═══════════════════════════════════\n\n';
+    
+    text += '球员名单:\n';
+    text += '─────────────────────────────────\n';
+    teamInfo.forEach((p, idx) => {
+        text += `  ${idx + 1}. ${p.name}  |  ${p.position}  |  评分: ${p.rating}\n`;
+    });
+    text += `  共 ${teamInfo.length} 名球员\n\n`;
+    
+    text += '战术与心态:\n';
+    text += '─────────────────────────────────\n';
+    text += `  战术风格: ${getTacticName() || '未选择'}\n`;
+    text += `  比赛心态: ${getMentalityName() || '未选择'}\n\n`;
+    
+    text += '阵型位置:\n';
+    text += '─────────────────────────────────\n';
+    if (formationAssignments.length > 0) {
+        formationAssignments.forEach(item => {
+            text += `  ${item.position}: ${item.player}\n`;
+        });
+    } else {
+        text += '  暂未分配位置\n';
+    }
+    text += '\n';
+    text += '═══════════════════════════════════\n';
+    text += '  阵容已提交\n';
+    text += '═══════════════════════════════════';
+    
+    // 复制到剪贴板
+    try {
+        await navigator.clipboard.writeText(text);
+        alert('已复制到剪贴板\n\n');
+    } catch (err) {
+        // 降级方案
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('已复制到剪贴板\n\n');
+    }
+};
+
 // ==================== 工具函数 ====================
 const hexToRgba = (hex, opacity) => {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -1368,19 +1841,19 @@ const shuffleArray = (arr) => {
 };
 
 const getPositions = (count, label) => {
-  if (count === 0) return [];
-  const result = [];
-  if (count === 1) {
-    result.push('center');
-  } else if (count === 2) {
-    result.push('left', 'right');
-  } else if (count >= 3) {
-    result.push('left', 'center', 'right');
-    for (let i = 3; i < count; i++) {
-      result.push('center-' + i);
+    if (count === 0) return [];
+    const result = [];
+    if (count === 1) {
+        result.push('center');
+    } else if (count === 2) {
+        result.push('left', 'right');
+    } else if (count >= 3) {
+        result.push('left', 'center', 'right');
+        for (let i = 3; i < count; i++) {
+            result.push('center-' + i);
+        }
     }
-  }
-  return result;
+    return result;
 };
 
 // ==================== 获取当前战术风格名称 ====================
@@ -1444,71 +1917,137 @@ const getMentalityDescription = () => {
 
 // ==================== 核心函数 ====================
 const fetchCandidates = () => {
-  if (availablePool.value.length === 0) {
-    currentCandidates.value = [];
-    return;
-  }
-  const shuffled = shuffleArray(availablePool.value);
-  const count = Math.min(5, shuffled.length);
-  currentCandidates.value = shuffled.slice(0, count).map((player, idx) => ({
-    ...player,
-    color: colors[idx % colors.length]
-  }));
-  selectedId.value = currentCandidates.value.length > 0 ? currentCandidates.value[0].id : null;
+    if (availablePool.value.length === 0) {
+        currentCandidates.value = [];
+        return;
+    }
+
+    // 如果还没开始选秀，不执行
+    if (showHome.value) return;
+    
+    // 根据当前选秀阶段确定 rating 过滤范围
+    const selected = myTeam.value.length;
+    let filtered = [];
+    
+    if (selected < 10) {
+        // 主力阶段：rating >= 146
+        filtered = availablePool.value.filter(p => p.rating >= 146);
+    } else if (selected < 16) {
+        // 替补阶段：130 <= rating <= 145
+        filtered = availablePool.value.filter(p => p.rating >= 130 && p.rating <= 145);
+    } else {
+        // 常规选秀结束，不应进入此分支
+        filtered = availablePool.value;
+    }
+    
+    // 如果过滤后没有球员，放宽限制（防止卡死）
+    if (filtered.length === 0) {
+        filtered = availablePool.value;
+        console.warn('没有符合条件的球员，已放宽限制');
+    }
+    
+    const shuffled = shuffleArray(filtered);
+    const count = Math.min(5, shuffled.length);
+    currentCandidates.value = shuffled.slice(0, count).map((player, idx) => ({
+        ...player,
+        color: colors[idx % colors.length]
+    }));
+    selectedId.value = currentCandidates.value.length > 0 ? currentCandidates.value[0].id : null;
 };
 
 const signPlayer = (player) => {
-  if (isSelecting.value) return;
-  isSelecting.value = true;
-  myTeam.value.push(player);
-  const candidateIds = currentCandidates.value.map(p => p.id);
-  availablePool.value = availablePool.value.filter(p => !candidateIds.includes(p.id));
-  if (navigator.vibrate) navigator.vibrate(30);
-  setTimeout(() => {
-    currentRound.value += 1;
-    isSelecting.value = false;
-    if (currentRound.value > totalRounds || availablePool.value.length === 0) {
-      currentCandidates.value = [];
-      isDraftFinished.value = true;
-      showTeam.value = true;
-      setTimeout(() => {
-        scrollToTeam();
-      }, 300);
-    } else {
-      fetchCandidates();
-    }
-  }, 300);
+    if (isSelecting.value) return;
+    isSelecting.value = true;
+    myTeam.value.push(player);
+    const candidateIds = currentCandidates.value.map(p => p.id);
+    availablePool.value = availablePool.value.filter(p => !candidateIds.includes(p.id));
+    if (navigator.vibrate) navigator.vibrate(30);
+    setTimeout(() => {
+        currentRound.value += 1;
+        isSelecting.value = false;
+        if (currentRound.value > totalRounds || availablePool.value.length === 0) {
+            // 常规选秀结束，进入门将选择
+            currentCandidates.value = [];
+            // 初始化门将池
+            const gkPlayers = gkPlayersData.map(p => ({ ...p, isGK: true }));
+            gkPool.value = shuffleArray(gkPlayers);
+            isGKRound.value = true;
+            gkSelectedCount.value = 0;
+            fetchGKCandidates();
+        } else {
+            fetchCandidates();
+        }
+    }, 300);
 };
+
+// ==================== 门将雷达图数据 ====================
+const gkRadarData = computed(() => {
+    const labels = gkAbilityKeys.map(key => key === '制空2' ? '制空' : key);
+    
+    const allDatasets = gkCandidates.value.map((player, idx) => {
+        const isSelected = player.id === gkSelectedId.value;
+        const color = colors[idx % colors.length];
+        const data = gkAbilityKeys.map(key => player.abilities?.[key] || 0);
+        return {
+            label: player.name,
+            data: data,
+            backgroundColor: 'rgba(0,0,0,0)',
+            borderColor: isSelected ? color : hexToRgba(color, 0.6),
+            borderWidth: isSelected ? 4 : 2,
+            pointBackgroundColor: isSelected ? color : hexToRgba(color, 0.6),
+            pointRadius: isSelected ? 2 : 0,
+            pointBorderColor: isSelected ? color : hexToRgba(color, 0.6),
+            pointBorderWidth: isSelected ? 2 : 1,
+            fill: false,
+            _playerId: player.id
+        };
+    });
+
+    if (gkSelectedId.value) {
+        const selectedIndex = allDatasets.findIndex(d => d._playerId === gkSelectedId.value);
+        if (selectedIndex !== -1) {
+            const [selectedItem] = allDatasets.splice(selectedIndex, 1);
+            allDatasets.push(selectedItem);
+        }
+    }
+    return { labels, datasets: allDatasets };
+});
 
 // ==================== 雷达图数据 ====================
 const radarData = computed(() => {
-  const labels = abilityKeys;
-  const allDatasets = currentCandidates.value.map((player, idx) => {
-    const isSelected = player.id === selectedId.value;
-    const color = colors[idx % colors.length];
-    return {
-      label: player.name,
-      data: abilityKeys.map(key => player.abilities?.[key] || 0),
-      backgroundColor: 'rgba(0,0,0,0)',
-      borderColor: isSelected ? color : hexToRgba(color, 0.6),
-      borderWidth: isSelected ? 4 : 2,
-      pointBackgroundColor: isSelected ? color : hexToRgba(color, 0.6),
-      pointRadius: isSelected ? 2 : 0,
-      pointBorderColor: isSelected ? color : hexToRgba(color, 0.6),
-      pointBorderWidth: isSelected ? 2 : 1,
-      fill: false,
-      _playerId: player.id
-    };
-  });
+    // 判断当前候选是否门将
+    const isGK = currentCandidates.value.length > 0 && currentCandidates.value[0]?.isGK === true;
+    const labels = isGK ? gkAbilityKeys : abilityKeys;
+    // 如果是门将，需要映射制空2显示为制空
+    const displayLabels = isGK ? labels.map(key => key === '制空2' ? '制空' : key) : labels;
+    
+    const allDatasets = currentCandidates.value.map((player, idx) => {
+        const isSelected = player.id === selectedId.value;
+        const color = colors[idx % colors.length];
+        const data = labels.map(key => player.abilities?.[key] || 0);
+        return {
+            label: player.name,
+            data: data,
+            backgroundColor: 'rgba(0,0,0,0)',
+            borderColor: isSelected ? color : hexToRgba(color, 0.6),
+            borderWidth: isSelected ? 4 : 2,
+            pointBackgroundColor: isSelected ? color : hexToRgba(color, 0.6),
+            pointRadius: isSelected ? 2 : 0,
+            pointBorderColor: isSelected ? color : hexToRgba(color, 0.6),
+            pointBorderWidth: isSelected ? 2 : 1,
+            fill: false,
+            _playerId: player.id
+        };
+    });
 
-  if (selectedId.value) {
-    const selectedIndex = allDatasets.findIndex(d => d._playerId === selectedId.value);
-    if (selectedIndex !== -1) {
-      const [selectedItem] = allDatasets.splice(selectedIndex, 1);
-      allDatasets.push(selectedItem);
+    if (selectedId.value) {
+        const selectedIndex = allDatasets.findIndex(d => d._playerId === selectedId.value);
+        if (selectedIndex !== -1) {
+            const [selectedItem] = allDatasets.splice(selectedIndex, 1);
+            allDatasets.push(selectedItem);
+        }
     }
-  }
-  return { labels, datasets: allDatasets };
+    return { labels: displayLabels, datasets: allDatasets };
 });
 
 // ==================== 滚动 ====================
@@ -1565,37 +2104,47 @@ const resetFormation = () => {
 
 // ==================== 重新开始 ====================
 const restartGame = () => {
-  const resetPlayers = PLAYER_DATA.map(p => ({ ...p }));
-  availablePool.value = shuffleArray(resetPlayers);
-  myTeam.value = [];
-  currentRound.value = 1;
-  selectedId.value = null;
-  isSelecting.value = false;
-  isDraftFinished.value = false;
-  showTactic.value = false;
-  showMentality.value = false;
-  showFormation.value = false;
-  showFormationResult.value = false;
-  selectedTactic.value = null;
-  selectedMentality.value = null;
-  formationStep.value = 0;
-  positionAssignments.value = {};
-  formationData.value = {
-    cb: 2,
-    fullbackType: '边后卫',
-    wingbackCount: 2,
-    cdm: 0,
-    lmrm: 0,
-    cm: 0,
-    cam: 0,
-    hasWingers: 0,
-    st: 1
-  };
-  showError.value = false;
-  errorMessage.value = '';
-  showTeam.value = false;
-  skipCount.value = maxSkipCount; // 重置跳过次数
-  fetchCandidates();
+    // 重置所有状态
+    const resetPlayers = PLAYER_DATA.map(p => ({ ...p }));
+    availablePool.value = shuffleArray(resetPlayers);
+    myTeam.value = [];
+    currentRound.value = 1;
+    selectedId.value = null;
+    isSelecting.value = false;
+    isDraftFinished.value = false;
+    showTactic.value = false;
+    showMentality.value = false;
+    showFormation.value = false;
+    showFormationResult.value = false;
+    selectedTactic.value = null;
+    selectedMentality.value = null;
+    formationStep.value = 0;
+    positionAssignments.value = {};
+    formationData.value = {
+        cb: 2,
+        fullbackType: '边后卫',
+        wingbackCount: 2,
+        cdm: 0,
+        lmrm: 0,
+        cm: 0,
+        cam: 0,
+        hasWingers: 0,
+        st: 1
+    };
+    showError.value = false;
+    errorMessage.value = '';
+    showTeam.value = false;
+    skipCount.value = maxSkipCount;
+    isGKRound.value = false;
+    gkPool.value = [];
+    gkCandidates.value = [];
+    gkSelectedCount.value = 0;
+    currentCandidates.value = [];
+    
+    // 返回首页
+    showHome.value = true;
+    isBattleMode.value = false;
+    currentUser.value = '';
 };
 
 // ==================== 生命周期 ====================

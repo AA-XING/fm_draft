@@ -376,115 +376,112 @@
         </div>
         
         <!-- 阵型图 -->
-        <div class="mb-3 p-3 bg-gray-50 rounded-xl">
+        <div class="mb-3 p-3 bg-gray-50 rounded-xl overflow-hidden">
             <p class="text-xs text-gray-500 text-center mb-2"></p>
-            <div class="relative w-full h-[340px] bg-gradient-to-b from-green-600 to-green-800 rounded-xl overflow-hidden">
-                <div class="absolute inset-0 flex flex-col items-center justify-between py-4 px-4 scale-[0.8] origin-center">
+            <div class="relative w-full aspect-[3/4] max-h-[380px] bg-gradient-to-b from-green-600 to-green-800 rounded-xl overflow-hidden">
+                <div class="absolute inset-0 flex flex-col items-center justify-between py-3 px-2">
                     
                     <!-- 第1行：中锋（中路） -->
                     <div class="flex justify-center w-full">
-                        <div class="flex justify-center gap-6" :class="formationData.st === 1 ? 'w-20' : formationData.st === 2 ? 'w-48' : 'w-72'">
+                        <div class="flex justify-center gap-3" :class="formationData.st === 1 ? 'w-16' : formationData.st === 2 ? 'w-36' : 'w-52'">
                             <div v-for="(pos, idx) in getPositions(formationData.st, '中锋')" :key="'st-'+idx" 
-                                 class="w-11 h-11 rounded-full bg-red-500 flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30">
+                                 class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
                         </div>
                     </div>
                     
                     <!-- 第2行：边锋（左/右）+ 前腰（中路） -->
-                    <div class="flex justify-center items-center w-full gap-4">
-                        <!-- 左路：边锋 -->
-                        <div class="flex justify-center w-[72px]">
+                    <div class="flex justify-center items-center w-full gap-2">
+                        <div class="flex justify-center w-14">
                             <div v-if="formationData.hasWingers >= 1" v-for="(pos, idx) in getPositions(1, '边锋')" :key="'w-left-'+idx" 
-                                 class="w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                 class="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
                         </div>
-                        <!-- 中路：前腰 -->
                         <div class="flex justify-center flex-1">
-                            <div class="flex justify-center gap-6" :class="formationData.cam === 1 ? 'w-20' : formationData.cam === 2 ? 'w-48' : 'w-72'">
+                            <div class="flex justify-center gap-3" :class="formationData.cam === 1 ? 'w-16' : formationData.cam === 2 ? 'w-36' : 'w-52'">
                                 <div v-for="(pos, idx) in getPositions(formationData.cam, '前腰')" :key="'cam-'+idx" 
-                                     class="w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                     class="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                     
                                 </div>
                             </div>
                         </div>
-                        <!-- 右路：边锋 -->
-                        <div class="flex justify-center w-[72px]">
+                        <div class="flex justify-center w-14">
                             <div v-if="formationData.hasWingers >= 2" v-for="(pos, idx) in getPositions(1, '边锋')" :key="'w-right-'+idx" 
-                                 class="w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                 class="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
                         </div>
                     </div>
                     
                     <!-- 第3行：边前卫（左/右）+ 中场（中路） -->
-                    <div class="flex justify-center items-center w-full gap-4">
-                        <div class="flex justify-center w-[72px]">
+                    <div class="flex justify-center items-center w-full gap-2">
+                        <div class="flex justify-center w-14">
                             <div v-if="formationData.lmrm >= 1" v-for="(pos, idx) in getPositions(1, '边前卫')" :key="'lmrm-left-'+idx" 
-                                 class="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                 class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
-                            <div class="flex justify-center gap-6" :class="formationData.cm === 1 ? 'w-20' : formationData.cm === 2 ? 'w-48' : 'w-72'">
+                            <div class="flex justify-center gap-3" :class="formationData.cm === 1 ? 'w-16' : formationData.cm === 2 ? 'w-36' : 'w-52'">
                                 <div v-for="(pos, idx) in getPositions(formationData.cm, '中场')" :key="'cm-'+idx" 
-                                     class="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                     class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                     
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-center w-[72px]">
+                        <div class="flex justify-center w-14">
                             <div v-if="formationData.lmrm >= 2" v-for="(pos, idx) in getPositions(1, '边前卫')" :key="'lmrm-right-'+idx" 
-                                 class="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                 class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
                         </div>
                     </div>
                     
                     <!-- 第4行：边翼卫（左/右）+ 后腰（中路） -->
-                    <div class="flex justify-center items-center w-full gap-4">
-                        <div class="flex justify-center w-[72px]">
+                    <div class="flex justify-center items-center w-full gap-2">
+                        <div class="flex justify-center w-14">
                             <div v-if="formationData.fullbackType === '边翼卫'" v-for="(pos, idx) in getPositions(1, '边翼卫')" :key="'wb-left-'+idx" 
-                                 class="w-10 h-10 rounded-full bg-cyan-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                 class="w-8 h-8 rounded-full bg-cyan-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
-                            <div class="flex justify-center gap-6" :class="formationData.cdm === 1 ? 'w-20' : formationData.cdm === 2 ? 'w-48' : 'w-72'">
+                            <div class="flex justify-center gap-3" :class="formationData.cdm === 1 ? 'w-16' : formationData.cdm === 2 ? 'w-36' : 'w-52'">
                                 <div v-for="(pos, idx) in getPositions(formationData.cdm, '后腰')" :key="'cdm-'+idx" 
-                                     class="w-10 h-10 rounded-full bg-cyan-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                     class="w-8 h-8 rounded-full bg-cyan-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                     
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-center w-[72px]">
+                        <div class="flex justify-center w-14">
                             <div v-if="formationData.fullbackType === '边翼卫'" v-for="(pos, idx) in getPositions(1, '边翼卫')" :key="'wb-right-'+idx" 
-                                 class="w-10 h-10 rounded-full bg-cyan-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                 class="w-8 h-8 rounded-full bg-cyan-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
                         </div>
                     </div>
                     
                     <!-- 第5行：边后卫（左/右）+ 中卫（中路） -->
-                    <div class="flex justify-center items-center w-full gap-4">
-                        <div class="flex justify-center w-[72px]">
+                    <div class="flex justify-center items-center w-full gap-2">
+                        <div class="flex justify-center w-14">
                             <div v-if="formationData.fullbackType === '边后卫'" v-for="(pos, idx) in getPositions(1, '边后卫')" :key="'fb-left-'+idx" 
-                                 class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                 class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
                         </div>
                         <div class="flex justify-center flex-1">
-                            <div class="flex justify-center gap-6" :class="formationData.cb === 2 ? 'w-48' : 'w-72'">
+                            <div class="flex justify-center gap-3" :class="formationData.cb === 2 ? 'w-36' : 'w-52'">
                                 <div v-for="(pos, idx) in getPositions(formationData.cb, '中卫')" :key="'cb-'+idx" 
-                                     class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                     class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                     
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-center w-[72px]">
+                        <div class="flex justify-center w-14">
                             <div v-if="formationData.fullbackType === '边后卫'" v-for="(pos, idx) in getPositions(1, '边后卫')" :key="'fb-right-'+idx" 
-                                 class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
+                                 class="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
                         </div>
@@ -492,7 +489,7 @@
                     
                     <!-- 门将 -->
                     <div class="flex justify-center w-full">
-                        <div class="w-12 h-12 rounded-full bg-purple-400 flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30">
+                        <div class="w-9 h-9 rounded-full bg-purple-400 flex items-center justify-center text-[8px] font-bold text-white shadow-lg border-2 border-white/30">
                             
                         </div>
                     </div>

@@ -35,10 +35,9 @@
           <!-- 球员表格 -->
           <div class="space-y-3">
             <div class="flex items-center text-xs text-gray-400 px-3 py-1">
-              <span class="w-8 text-center">#</span>
-              <span class="flex-1">球员</span>
+              <span class="flex-1 pl-2">球员</span>
               <span class="w-20 text-center">位置</span>
-              <span class="w-12 text-center">评分</span>
+              <span class="w-10 text-center">CA</span>
             </div>
 
             <div 
@@ -48,15 +47,14 @@
               :class="{ 'border-2 border-green-400': selectedId === player.id }"
               @click="selectedId = player.id"
             >
-              <span class="w-8 text-center text-sm font-bold text-gray-400">{{ idx + 1 }}</span>
-              <div class="flex-1 min-w-0">
+              <div class="flex-1 min-w-0 pl-2">
                 <div class="font-bold text-gray-800 text-sm truncate">{{ player.name }}</div>
                 <div class="text-xs text-gray-400 truncate">{{ player.club || '' }}</div>
               </div>
               <div class="w-20 text-center flex-shrink-0">
                 <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ player.position }}</span>
               </div>
-              <div class="w-12 text-center flex-shrink-0">
+              <div class="w-10 text-center flex-shrink-0">
                 <span class="font-bold text-green-600 text-lg">{{ player.rating }}</span>
               </div>
             </div>

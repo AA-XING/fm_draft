@@ -37,7 +37,6 @@
             <div class="flex items-center text-xs text-gray-400 px-3 py-1">
               <span class="flex-1 pl-2">球员</span>
               <span class="w-20 text-center">位置</span>
-              <span class="w-10 text-center">CA</span>
             </div>
 
             <div 
@@ -53,9 +52,6 @@
               </div>
               <div class="w-20 text-center flex-shrink-0">
                 <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ player.position }}</span>
-              </div>
-              <div class="w-10 text-center flex-shrink-0">
-                <span class="font-bold text-green-600 text-lg">{{ player.rating }}</span>
               </div>
             </div>
           </div>
@@ -382,8 +378,8 @@
         <!-- 阵型图 -->
         <div class="mb-3 p-3 bg-gray-50 rounded-xl">
             <p class="text-xs text-gray-500 text-center mb-2"></p>
-            <div class="relative w-full h-[420px] bg-gradient-to-b from-green-600 to-green-800 rounded-xl overflow-hidden">
-                <div class="absolute inset-0 flex flex-col items-center justify-between py-6 px-4">
+            <div class="relative w-full h-[340px] bg-gradient-to-b from-green-600 to-green-800 rounded-xl overflow-hidden">
+                <div class="absolute inset-0 flex flex-col items-center justify-between py-4 px-4 scale-[0.8] origin-center">
                     
                     <!-- 第1行：中锋（中路） -->
                     <div class="flex justify-center w-full">
@@ -396,10 +392,10 @@
                     </div>
                     
                     <!-- 第2行：边锋（左/右）+ 前腰（中路） -->
-                    <div class="flex justify-between items-center w-full">
+                    <div class="flex justify-center items-center w-full gap-4">
                         <!-- 左路：边锋 -->
                         <div class="flex justify-center w-[72px]">
-                            <div v-if="formationData.hasWingers >= 1" v-for="(pos, idx) in getPositions(formationData.hasWingers === 2 ? 1 : 0, '边锋')" :key="'w-left-'+idx" 
+                            <div v-if="formationData.hasWingers >= 1" v-for="(pos, idx) in getPositions(1, '边锋')" :key="'w-left-'+idx" 
                                  class="w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
@@ -415,7 +411,7 @@
                         </div>
                         <!-- 右路：边锋 -->
                         <div class="flex justify-center w-[72px]">
-                            <div v-if="formationData.hasWingers >= 2" v-for="(pos, idx) in getPositions(formationData.hasWingers === 2 ? 1 : 0, '边锋')" :key="'w-right-'+idx" 
+                            <div v-if="formationData.hasWingers >= 2" v-for="(pos, idx) in getPositions(1, '边锋')" :key="'w-right-'+idx" 
                                  class="w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
@@ -423,9 +419,9 @@
                     </div>
                     
                     <!-- 第3行：边前卫（左/右）+ 中场（中路） -->
-                    <div class="flex justify-between items-center w-full">
+                    <div class="flex justify-center items-center w-full gap-4">
                         <div class="flex justify-center w-[72px]">
-                            <div v-if="formationData.lmrm >= 1" v-for="(pos, idx) in getPositions(formationData.lmrm === 2 ? 1 : 0, '边前卫')" :key="'lmrm-left-'+idx" 
+                            <div v-if="formationData.lmrm >= 1" v-for="(pos, idx) in getPositions(1, '边前卫')" :key="'lmrm-left-'+idx" 
                                  class="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
@@ -439,7 +435,7 @@
                             </div>
                         </div>
                         <div class="flex justify-center w-[72px]">
-                            <div v-if="formationData.lmrm >= 2" v-for="(pos, idx) in getPositions(formationData.lmrm === 2 ? 1 : 0, '边前卫')" :key="'lmrm-right-'+idx" 
+                            <div v-if="formationData.lmrm >= 2" v-for="(pos, idx) in getPositions(1, '边前卫')" :key="'lmrm-right-'+idx" 
                                  class="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
                                 
                             </div>
@@ -447,7 +443,7 @@
                     </div>
                     
                     <!-- 第4行：边翼卫（左/右）+ 后腰（中路） -->
-                    <div class="flex justify-between items-center w-full">
+                    <div class="flex justify-center items-center w-full gap-4">
                         <div class="flex justify-center w-[72px]">
                             <div v-if="formationData.fullbackType === '边翼卫'" v-for="(pos, idx) in getPositions(1, '边翼卫')" :key="'wb-left-'+idx" 
                                  class="w-10 h-10 rounded-full bg-cyan-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">
@@ -471,7 +467,7 @@
                     </div>
                     
                     <!-- 第5行：边后卫（左/右）+ 中卫（中路） -->
-                    <div class="flex justify-between items-center w-full">
+                    <div class="flex justify-center items-center w-full gap-4">
                         <div class="flex justify-center w-[72px]">
                             <div v-if="formationData.fullbackType === '边后卫'" v-for="(pos, idx) in getPositions(1, '边后卫')" :key="'fb-left-'+idx" 
                                  class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-[9px] font-bold text-white shadow-lg border-2 border-white/30">

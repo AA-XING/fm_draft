@@ -470,7 +470,7 @@
 
           <!-- 当前阵容预览 -->
           <div class="mt-4 p-3 bg-gray-50 rounded-xl">
-            <p class="text-xs text-gray-500">当前阵容人数：{{ currentFormationTotal + 1 }} / 11（含门将）</p>
+            <p class="text-xs text-gray-500">当前阵容人数：{{ currentFormationTotal + 1 }} / 11（含门将和至少1中锋）</p>
             <div class="flex flex-wrap gap-1 mt-1">
               <span v-if="formationData.cb" class="text-xs bg-blue-100 px-2 py-0.5 rounded">CB×{{ formationData.cb }}</span>
               <span v-if="formationData.fullbackType && formationData.fullbackType !== '无'" class="text-xs bg-blue-100 px-2 py-0.5 rounded">{{ formationData.fullbackType }}×2</span>
@@ -708,22 +708,26 @@
                 @click="resetFormation"
                 class="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold active:scale-95 transition"
             >
-                🔄 阵型
+                重选阵型
             </button>
             <button 
                 v-if="!isBattleMode"
                 @click="restartGame"
                 class="flex-1 py-3 bg-green-500 text-white rounded-xl font-bold active:scale-95 transition"
             >
-                🔄 选人
+                首页
             </button>
-            <button 
-                v-else
-                @click="submitTeam"
-                class="flex-1 py-3 bg-purple-500 text-white rounded-xl font-bold active:scale-95 transition"
-            >
-                📤 提交阵容
-            </button>
+            <div v-else class="flex-1 flex flex-col items-center">
+                <p class="text-[13px] text-orange-500 font-bold mb-1 text-center">⚠️提交有延迟请勿重复点击</p>
+                <button 
+                    @click="submitTeam"
+                    :disabled="isSubmitting"
+                    class="w-full py-3 rounded-xl font-bold active:scale-95 transition"
+                    :class="isSubmitting ? 'bg-gray-400 text-gray-600 cursor-not-allowed' : 'bg-purple-500 text-white'"
+                >
+                    {{ isSubmitting ? '提交中...' : '提交' }}
+                </button>
+            </div>
         </div>
     </div>
 
@@ -917,6 +921,8 @@ import fieldPlayersData from './data/fieldPlayers.json';
 import gkPlayersData from './data/gkPlayers.json';
 import usersData from './data/users.json';
 
+import emailjs from '@emailjs/browser';
+
 ChartJS.register(
   RadialLinearScale,
   PointElement,
@@ -948,6 +954,9 @@ const gkAbilityKeys = ['拦截射门', '身体', '速度', '精神', '指挥防�
 
 const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
 const PLAYER_DATA = fieldPlayersData;
+
+// ==================== 提交状态 ====================
+const isSubmitting = ref(false);
 
 // ==================== 雷达图配置 ====================
 const radarOptions = {
@@ -1047,6 +1056,11 @@ const positionDisplayMap = {
     'DC': '中卫',
     'DR': '右后卫'
 };
+
+// ==================== 当前选中位置名称 ====================
+const currentPositionName = computed(() => {
+    return positionDisplayMap[currentPositionCode.value] || currentPositionCode.value || '位置';
+});
 
 // ==================== 游戏状态 ====================
 const totalRounds = 16;
@@ -1752,74 +1766,149 @@ const confirmLogin = () => {
 
 // ==================== 提交阵容 ====================
 const submitTeam = async () => {
-    // 收集球员信息
-    const teamInfo = myTeam.value.map(p => ({
-        name: p.name,
-        position: p.position,
-        rating: p.rating
-    }));
-    
-    // 收集阵型位置分配
-    const formationAssignments = [];
-    for (const [key, val] of Object.entries(positionAssignments.value)) {
-        const [pos, idx] = key.split('_');
-        const player = myTeam.value.find(p => p.id === val.playerId);
-        if (player) {
-            formationAssignments.push({
-                position: pos,
-                player: player.name,
-                playerId: val.playerId
-            });
-        }
+    // 防止重复点击
+    if (isSubmitting.value) {
+        alert('正在提交中，请勿重复点击！');
+        return;
     }
     
-    // 生成复制文本
-    let text = '═══════════════════════════════════\n';
-    text += `  阵容提交\n`;
-    text += `  用户: ${currentUser.value || '模拟模式'}\n`;
-    text += `  ${new Date().toLocaleString()}\n`;
-    text += '═══════════════════════════════════\n\n';
+    isSubmitting.value = true;
     
-    text += '球员名单:\n';
-    text += '─────────────────────────────────\n';
-    teamInfo.forEach((p, idx) => {
-        text += `  ${idx + 1}. ${p.name}  |  ${p.position}  |  评分: ${p.rating}\n`;
-    });
-    text += `  共 ${teamInfo.length} 名球员\n\n`;
-    
-    text += '战术与心态:\n';
-    text += '─────────────────────────────────\n';
-    text += `  战术风格: ${getTacticName() || '未选择'}\n`;
-    text += `  比赛心态: ${getMentalityName() || '未选择'}\n\n`;
-    
-    text += '阵型位置:\n';
-    text += '─────────────────────────────────\n';
-    if (formationAssignments.length > 0) {
-        formationAssignments.forEach(item => {
-            text += `  ${item.position}: ${item.player}\n`;
-        });
-    } else {
-        text += '  暂未分配位置\n';
-    }
-    text += '\n';
-    text += '═══════════════════════════════════\n';
-    text += '  阵容已提交\n';
-    text += '═══════════════════════════════════';
-    
-    // 复制到剪贴板
     try {
-        await navigator.clipboard.writeText(text);
-        alert('已复制到剪贴板\n\n');
-    } catch (err) {
-        // 降级方案
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        alert('已复制到剪贴板\n\n');
+        // 收集球员信息
+        const teamInfo = myTeam.value.map(p => ({
+            name: p.name,
+            position: p.position,
+            rating: p.rating
+        }));
+        
+        // 收集阵型位置分配
+        const formationAssignments = [];
+        let totalRating = 0;
+        let positionCount = 0;
+        
+        for (const [key, val] of Object.entries(positionAssignments.value)) {
+            const [pos, idx] = key.split('_');
+            const player = myTeam.value.find(p => p.id === val.playerId);
+            if (player) {
+                formationAssignments.push({
+                    position: pos,
+                    player: player.name,
+                    playerId: val.playerId,
+                    rating: player.rating
+                });
+                totalRating += player.rating;
+                positionCount++;
+            }
+        }
+        
+        // ===== 按指定顺序排序 =====
+        const positionOrder = ['GK', 'DC', 'DL', 'DR', 'WBL', 'WBR', 'DM', 'MC', 'ML', 'MR', 'AMC', 'AML', 'AMR', 'ST'];
+
+        formationAssignments.sort((a, b) => {
+            const indexA = positionOrder.indexOf(a.position);
+            const indexB = positionOrder.indexOf(b.position);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+
+        // 计算平均评分
+        const avgRating = positionCount > 0 ? (totalRating / positionCount).toFixed(1) : 'N/A';
+        
+        // 生成复制文本
+        let text = '═══════════════════════════════════\n';
+        text += `  阵容提交\n`;
+        text += `  用户: ${currentUser.value || '模拟模式'}\n`;
+        text += `  ${new Date().toLocaleString()}\n`;
+        text += '═══════════════════════════════════\n\n';
+        
+        text += '球员名单:\n';
+        text += '─────────────────────────────────\n';
+        teamInfo.forEach((p, idx) => {
+            text += `  ${idx + 1}. ${p.name}  |  ${p.position} \n`;
+        });
+        text += `  共 ${teamInfo.length} 名球员\n\n`;
+        
+        text += '战术与心态:\n';
+        text += '─────────────────────────────────\n';
+        text += `  战术风格: ${getTacticName() || '未选择'}\n`;
+        text += `  比赛心态: ${getMentalityName() || '未选择'}\n\n`;
+        
+        text += '阵型与首发:\n';
+        text += `  平均CA: ${avgRating}\n`;
+        text += '─────────────────────────────────\n';
+        if (formationAssignments.length > 0) {
+            formationAssignments.forEach(item => {
+                text += `  ${item.position}: ${item.player}\n`;
+            });
+        } else {
+            text += '  暂未分配位置\n';
+        }
+        text += '\n';
+        text += '═══════════════════════════════════\n';
+        
+        // ===== 1. 复制到剪贴板 =====
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (err) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+        }
+        
+        // ===== 2. 发送邮件 =====
+        let emailSuccess = false;
+        try {
+            emailjs.init(EMAILJS_CONFIG.publicKey);
+            
+            const result = await emailjs.send(
+                EMAILJS_CONFIG.serviceId,
+                EMAILJS_CONFIG.templateId,
+                {
+                    to_email: EMAILJS_CONFIG.toEmail,
+                    user_name: currentUser.value || '模拟模式',
+                    time: new Date().toLocaleString(),
+                    message: text,
+                    team_count: teamInfo.length,
+                    avg_rating: avgRating
+                }
+            );
+            
+            if (result.status === 200) {
+                emailSuccess = true;
+            }
+        } catch (error) {
+            console.error('邮件发送失败:', error);
+        }
+        
+        // ===== 3. 提示用户 =====
+        if (emailSuccess) {
+            alert('阵容已提交并复制到剪贴板\n\n请勿重复提交');
+        } else {
+            alert('阵容已复制到剪贴板\n\n提交失败，请检查网络后重试');
+        }
+        
+    } catch (error) {
+        console.error('提交阵容失败:', error);
+        alert('提交失败，请重试');
+    } finally {
+        // 3秒后解除锁定
+        setTimeout(() => {
+            isSubmitting.value = false;
+        }, 3000);
     }
+};
+
+// ==================== EmailJS 配置 ====================
+const EMAILJS_CONFIG = {
+    publicKey: '-ZziNJYQCXfh9wdxX',
+    serviceId: 'service_goqag7b',
+    templateId: 'template_j7qr79p',
+    toEmail: 'yzythe9th@126.com'
 };
 
 // ==================== 工具函数 ====================

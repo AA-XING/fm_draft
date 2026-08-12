@@ -2155,9 +2155,9 @@ const submitTeam = async () => {
         }
         
         if (emailSuccess) {
-            alert(`阵容已提交并复制到剪贴板\n\n阵容代码: ${formationCode}\n\n请勿重复提交`);
+            alert(`阵容已提交并复制到剪贴板\n\n请勿重复提交`);
         } else {
-            alert(`阵容已复制到剪贴板\n\n阵容代码: ${formationCode}\n\n提交失败，请检查网络后重试`);
+            alert(`阵容已复制到剪贴板\n\n提交失败，请检查网络后重试`);
         }
         
     } catch (error) {

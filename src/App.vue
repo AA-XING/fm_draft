@@ -83,7 +83,7 @@
 
     <!-- ===== 中部内容 ===== -->
     <div class="flex-1 overflow-y-auto p-4">
-      
+
       <!-- ===== 选秀界面 ===== -->
       <div v-if="!showHome && !isDraftFinished && !showTactic && !showMentality && !showFormation && !showFormationResult">
           <!-- 常规球员选秀 -->
@@ -93,6 +93,7 @@
                   <div class="flex items-center text-xs text-gray-400 px-3 py-1">
                       <span class="flex-1 pl-2">球员</span>
                       <span class="w-20 text-center">位置</span>
+                      <span class="w-8 text-center"></span>
                   </div>
 
                   <div 
@@ -109,6 +110,14 @@
                       <div class="w-20 text-center flex-shrink-0">
                           <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ player.position }}</span>
                       </div>
+                      <!-- ===== 带圈i按钮 ===== -->
+                      <button 
+                          @click.stop="openPlayerDetail(player)"
+                          class="w-7 h-7 flex-shrink-0 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center text-gray-500 hover:text-gray-700 text-sm font-bold"
+                          title="查看球员详情"
+                      >
+                          <span class="text-xs font-serif font-bold">ⓘ</span>
+                      </button>
                   </div>
               </div>
 
@@ -170,6 +179,7 @@
                   <div class="flex items-center text-xs text-gray-400 px-3 py-1">
                       <span class="flex-1 pl-2">门将</span>
                       <span class="w-20 text-center">位置</span>
+                      <span class="w-8 text-center"></span>
                   </div>
                   <div 
                       v-for="(player, idx) in gkCandidates" 
@@ -185,6 +195,14 @@
                       <div class="w-20 text-center flex-shrink-0">
                           <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{{ player.position }}</span>
                       </div>
+                      <!-- ===== 带圈i按钮 ===== -->
+                      <button 
+                          @click.stop="openPlayerDetail(player)"
+                          class="w-7 h-7 flex-shrink-0 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center text-gray-500 hover:text-gray-700 text-sm font-bold"
+                          title="查看球员详情"
+                      >
+                          <span class="text-xs font-serif font-bold">ⓘ</span>
+                      </button>
                   </div>
               </div>
 
@@ -774,14 +792,16 @@
         </div>
     </div>
 
-    <!-- ===== 球员详情弹出框（八维图） ===== -->
+    <!-- ===== 球员详情弹出框（八维图 + 位置热力图） ===== -->
     <div v-if="showPlayerDetail" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="closePlayerDetail">
         <div class="bg-white rounded-2xl p-4 max-w-sm w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-3">
                 <h4 class="font-bold text-gray-800">{{ detailPlayer?.name || '球员' }}</h4>
                 <span class="text-xs text-gray-400">{{ detailPlayer?.position || '' }}</span>
             </div>
-            <div class="w-full" style="height: 300px; position: relative;">
+            
+            <!-- ===== 雷达图标签页 ===== -->
+            <div v-if="detailTab === 'radar'" class="w-full" style="height: 300px; position: relative;">
                 <Radar 
                     :data="detailRadarData" 
                     :options="detailRadarOptions"
@@ -791,6 +811,189 @@
                     暂无能力数据
                 </div>
             </div>
+            
+            <!-- ===== 位置热图标签页 ===== -->
+            <div v-if="detailTab === 'positions'" class="w-full">
+                <p class="text-xs text-gray-400 text-center mb-2">位置适应性</p>
+                <div class="relative w-full aspect-[3/4] max-h-[380px] bg-gradient-to-b from-green-600 to-green-800 rounded-xl overflow-hidden mx-auto">
+                    <div class="absolute inset-0 flex flex-col items-center justify-between py-2 px-1">
+                        
+                        <!-- 第1行：中锋（中路） -->
+                        <div class="flex justify-center w-full">
+                            <div class="flex justify-center w-12">
+                                <div v-for="(pos, idx) in getPositions(1, 'ST')" :key="'st-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                     :class="getPositionHeatColor('ST')"
+                                >
+                                    ST
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 第2行：边锋（左/右）+ 前腰（中路） -->
+                        <div class="flex justify-center items-center w-full gap-1 px-1">
+                            <div class="flex justify-center w-10 flex-shrink-0">
+                                <div v-for="(pos, idx) in getPositions(1, 'AML')" :key="'aml-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                     :class="getPositionHeatColor('AML')"
+                                >
+                                    AML
+                                </div>
+                            </div>
+                            <div class="flex justify-center flex-1">
+                                <div class="flex justify-center w-12">
+                                    <div v-for="(pos, idx) in getPositions(1, 'AMC')" :key="'amc-'+idx" 
+                                         class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                         :class="getPositionHeatColor('AMC')"
+                                    >
+                                        AMC
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-center w-10 flex-shrink-0">
+                                <div v-for="(pos, idx) in getPositions(1, 'AMR')" :key="'amr-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                     :class="getPositionHeatColor('AMR')"
+                                >
+                                    AMR
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 第3行：边前卫（左/右）+ 中场（中路） -->
+                        <div class="flex justify-center items-center w-full gap-1 px-1">
+                            <div class="flex justify-center w-10 flex-shrink-0">
+                                <div v-for="(pos, idx) in getPositions(1, 'ML')" :key="'ml-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                     :class="getPositionHeatColor('ML')"
+                                >
+                                    ML
+                                </div>
+                            </div>
+                            <div class="flex justify-center flex-1">
+                                <div class="flex justify-center w-12">
+                                    <div v-for="(pos, idx) in getPositions(1, 'MC')" :key="'mc-'+idx" 
+                                         class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                         :class="getPositionHeatColor('MC')"
+                                    >
+                                        MC
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-center w-10 flex-shrink-0">
+                                <div v-for="(pos, idx) in getPositions(1, 'MR')" :key="'mr-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                     :class="getPositionHeatColor('MR')"
+                                >
+                                    MR
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 第4行：边翼卫（左/右）+ 后腰（中路） -->
+                        <div class="flex justify-center items-center w-full gap-1 px-1">
+                            <div class="flex justify-center w-10 flex-shrink-0">
+                                <div v-for="(pos, idx) in getPositions(1, 'WBL')" :key="'wbl-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                     :class="getPositionHeatColor('WBL')"
+                                >
+                                    WBL
+                                </div>
+                            </div>
+                            <div class="flex justify-center flex-1">
+                                <div class="flex justify-center w-12">
+                                    <div v-for="(pos, idx) in getPositions(1, 'DM')" :key="'dm-'+idx" 
+                                         class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                         :class="getPositionHeatColor('DM')"
+                                    >
+                                        DM
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-center w-10 flex-shrink-0">
+                                <div v-for="(pos, idx) in getPositions(1, 'WBR')" :key="'wbr-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                     :class="getPositionHeatColor('WBR')"
+                                >
+                                    WBR
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 第5行：边后卫（左/右）+ 中卫（中路） -->
+                        <div class="flex justify-center items-center w-full gap-1 px-1">
+                            <div class="flex justify-center w-10 flex-shrink-0">
+                                <div v-for="(pos, idx) in getPositions(1, 'DL')" :key="'dl-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                     :class="getPositionHeatColor('DL')"
+                                >
+                                    DL
+                                </div>
+                            </div>
+                            <div class="flex justify-center flex-1">
+                                <div class="flex justify-center w-12">
+                                    <div v-for="(pos, idx) in getPositions(1, 'DC')" :key="'dc-'+idx" 
+                                         class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                         :class="getPositionHeatColor('DC')"
+                                    >
+                                        DC
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-center w-10 flex-shrink-0">
+                                <div v-for="(pos, idx) in getPositions(1, 'DR')" :key="'dr-'+idx" 
+                                     class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                     :class="getPositionHeatColor('DR')"
+                                >
+                                    DR
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 门将 -->
+                        <div class="flex justify-center w-full">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg border-2 border-white/30"
+                                 :class="getPositionHeatColor('GK')"
+                            >
+                                GK
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 图例 -->
+                <div class="flex items-center justify-center gap-4 mt-3 text-xs">
+                    <span class="text-gray-400">← 低</span>
+                    <div class="flex h-3 rounded-full overflow-hidden">
+                        <div class="w-5 bg-gray-400"></div>
+                        <div class="w-5 bg-red-400"></div>
+                        <div class="w-5 bg-orange-400"></div>
+                        <div class="w-5 bg-yellow-400"></div>
+                        <div class="w-5 bg-green-600"></div>
+                        <div class="w-5 bg-green-400"></div>
+                    </div>
+                    <span class="text-gray-400">高 →</span>
+                </div>
+            </div>
+            
+            <!-- ===== 标签页切换（放在图下方，关闭按钮上方） ===== -->
+            <div class="flex border-b border-gray-200 mb-3 mt-3">
+                <button 
+                    @click="detailTab = 'radar'"
+                    class="flex-1 py-2 text-sm font-medium transition-all"
+                    :class="detailTab === 'radar' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'"
+                >
+                    能力
+                </button>
+                <button 
+                    @click="detailTab = 'positions'"
+                    class="flex-1 py-2 text-sm font-medium transition-all"
+                    :class="detailTab === 'positions' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-400 hover:text-gray-600'"
+                >
+                    位置
+                </button>
+            </div>
+            
             <button @click="closePlayerDetail" class="w-full mt-3 py-2 bg-gray-200 rounded-xl font-bold">关闭</button>
         </div>
     </div>
@@ -952,7 +1155,7 @@ const gkSelectedId = ref(null);
 const abilityKeys = ['防守', '身体', '速度', '创造', '进攻', '技术', '制空', '精神'];
 const gkAbilityKeys = ['拦截射门', '身体', '速度', '精神', '指挥防守', '意外性', '制空', '大脚'];
 
-const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
+const colors = ['#E60000', '#36A2EB', '#E8692E', '#4BC0C0', '#9966FF'];
 const PLAYER_DATA = fieldPlayersData;
 
 // ==================== 提交状态 ====================
@@ -1401,7 +1604,36 @@ const getDetailValueColor = (value) => {
 // ==================== 球员详情弹出框控制 ====================
 const openPlayerDetail = (player) => {
     detailPlayer.value = player;
+    detailTab.value = 'radar';  // 默认显示雷达图
     showPlayerDetail.value = true;
+};
+
+// ==================== 详情标签页 ====================
+const detailTab = ref('radar');  // 'radar' 或 'positions'
+
+// ==================== 位置热图颜色 ====================
+const getPositionHeatColor = (positionCode) => {
+    const player = detailPlayer.value;
+    if (!player || !player.detailed_pos) return 'bg-gray-200 text-gray-400';
+    
+    const value = player.detailed_pos[positionCode];
+    if (value === undefined || value < 4) return 'bg-gray-200 text-gray-400';
+    if (value >= 18) return 'bg-green-400 text-white';
+    if (value >= 15) return 'bg-green-600 text-white';
+    if (value >= 12) return 'bg-yellow-400 text-white';
+    if (value >= 9) return 'bg-orange-400 text-white';
+    if (value >= 4) return 'bg-red-400 text-white';
+    return 'bg-gray-200 text-gray-400';
+};
+
+// ==================== 位置热图数值 ====================
+const getPositionHeatValue = (positionCode) => {
+    const player = detailPlayer.value;
+    if (!player || !player.detailed_pos) return '-';
+    
+    const value = player.detailed_pos[positionCode];
+    if (value === undefined) return '-';
+    return value;
 };
 
 const closePlayerDetail = () => {

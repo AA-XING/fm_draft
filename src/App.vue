@@ -8,6 +8,10 @@
                 <span class="text-2xl">⚽</span>
                 <span class="text-xl font-bold text-transparent">　</span>
             </div>
+            <!-- 进度提示 - 居中 -->
+            <div class="text-center text-sm font-bold" :class="getStageHintClass()">
+                {{ getStageHint() }}
+            </div>
             <div class="text-right">
                 <span class="text-sm text-gray-500">已选</span>
                 <span class="font-bold text-green-600 text-lg ml-1">{{ myTeam.length }}</span>
@@ -82,10 +86,6 @@
       
       <!-- ===== 选秀界面 ===== -->
       <div v-if="!showHome && !isDraftFinished && !showTactic && !showMentality && !showFormation && !showFormationResult">
-          <!-- 阶段提示 -->
-          <div class="text-center text-sm font-bold mb-3 px-3 py-2 rounded-xl" :class="getStageHintClass()">
-              {{ getStageHint() }}
-          </div>
           <!-- 常规球员选秀 -->
           <div v-if="!isGKRound && currentCandidates.length > 0">
               <!-- 球员表格 -->
@@ -489,7 +489,7 @@
         <div class="flex gap-3 mt-6">
           <button 
             v-if="formationStep > 0"
-            @click="formationStep--"
+            @click="prevStep"
             class="flex-1 py-3 bg-gray-200 rounded-xl font-bold active:scale-95 transition"
           >
             ← 上一步
@@ -748,7 +748,7 @@
     <!-- ===== 球员选择弹出框 ===== -->
     <div v-if="showPlayerSelect" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="closePlayerSelect">
         <div class="bg-white rounded-2xl p-4 max-w-sm w-full mx-4 max-h-[70vh] overflow-y-auto">
-            <h4 class="font-bold text-center text-gray-800 mb-3">选择 {{ currentPositionName }} 球员</h4>
+            <h4 class="font-bold text-center text-gray-800 mb-3"> {{ currentPositionName }} 位置适应性</h4>
             <div class="space-y-2">
                 <div 
                     v-for="player in availablePlayersForPosition" 
@@ -1672,9 +1672,9 @@ const getProgressColor = () => {
     const progress = selected / total;
     
     // 0-10轮：绿色，11-16轮：蓝色，17-18轮：黄色
-    if (selected <= 10) {
+    if (selected <= 9) {
         return 'bg-green-500';
-    } else if (selected <= 16) {
+    } else if (selected <= 15) {
         return 'bg-blue-500';
     } else {
         return 'bg-yellow-500';
@@ -2159,9 +2159,36 @@ const confirmTactic = () => {
 
 // ==================== 阵型函数 ====================
 const nextStep = () => {
-  if (!canNext.value) return;
-  formationStep.value += 1;
-  showError.value = false;
+    if (!canNext.value) return;
+    formationStep.value += 1;
+    showError.value = false;
+};
+
+const prevStep = () => {
+    if (formationStep.value <= 0) return;
+    
+    // ===== 重置当前步骤为默认值 =====
+    const defaultValues = {
+        0: { cb: 2 },
+        1: { fullbackType: '边后卫', wingbackCount: 2 },
+        2: { cdm: 0 },
+        3: { lmrm: 0 },
+        4: { cm: 0 },
+        5: { cam: 0 },
+        6: { hasWingers: 0 },
+        7: { st: 1 }
+    };
+    
+    const defaults = defaultValues[formationStep.value];
+    if (defaults) {
+        Object.keys(defaults).forEach(key => {
+            formationData.value[key] = defaults[key];
+        });
+    }
+    
+    formationStep.value -= 1;
+    showError.value = false;
+    errorMessage.value = '';
 };
 
 const finishFormation = () => {

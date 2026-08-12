@@ -1998,7 +1998,6 @@ const confirmLogin = () => {
 
 // ==================== 提交阵容 ====================
 const submitTeam = async () => {
-    // 防止重复点击
     if (isSubmitting.value) {
         alert('正在提交中，请勿重复点击！');
         return;
@@ -2007,13 +2006,11 @@ const submitTeam = async () => {
     isSubmitting.value = true;
     
     try {
-        // 收集球员信息 - 只保留 name 和 uid
         const teamInfo = myTeam.value.map(p => ({
             name: p.name,
             uid: p.uid || 'N/A'
         }));
         
-        // 收集阵型位置分配
         const formationAssignments = [];
         let totalRating = 0;
         let positionCount = 0;
@@ -2034,49 +2031,48 @@ const submitTeam = async () => {
             }
         }
         
-        // ===== 按位置分组统计 =====
-        const positionGroups = {
-            'GK': { code: 'GK', count: 0, players: [] },
-            'DC': { code: 'DC', count: 0, players: [] },
-            'DL': { code: 'DL', count: 0, players: [] },
-            'DR': { code: 'DR', count: 0, players: [] },
-            'WBL': { code: 'WBL', count: 0, players: [] },
-            'WBR': { code: 'WBR', count: 0, players: [] },
-            'DM': { code: 'DM', count: 0, players: [] },
-            'MC': { code: 'MC', count: 0, players: [] },
-            'ML': { code: 'ML', count: 0, players: [] },
-            'MR': { code: 'MR', count: 0, players: [] },
-            'AMC': { code: 'AMC', count: 0, players: [] },
-            'AML': { code: 'AML', count: 0, players: [] },
-            'AMR': { code: 'AMR', count: 0, players: [] },
-            'ST': { code: 'ST', count: 0, players: [] }
-        };
+        // ===== 按指定顺序生成阵容代码（根据 formationData） =====
+        let formationCode = 'GK1';
         
-        formationAssignments.forEach(item => {
-            if (positionGroups[item.position]) {
-                positionGroups[item.position].count++;
-                positionGroups[item.position].players.push(item.player);
-            }
-        });
+        if (formationData.value.cb > 0) {
+            formationCode += 'DC' + formationData.value.cb;
+        }
         
-        // ===== 按指定顺序生成阵容代码 =====
-        const positionOrder = ['GK', 'DC', 'DL', 'DR', 'WBL', 'WBR', 'DM', 'MC', 'ML', 'MR', 'AMC', 'AML', 'AMR', 'ST'];
+        if (formationData.value.fullbackType === '边后卫') {
+            formationCode += 'DL1DR1';
+        }
         
-        let formationCode = '';
-        positionOrder.forEach(pos => {
-            const group = positionGroups[pos];
-            if (group && group.count > 0) {
-                formationCode += pos + group.count;
-            }
-        });
+        if (formationData.value.fullbackType === '边翼卫') {
+            formationCode += 'WBL1WBR1';
+        }
         
-        if (formationCode === '') {
-            formationCode = 'GK1DC2DL1DR1DM1MC2AMC1AML1AMR1ST1';
+        if (formationData.value.cdm > 0) {
+            formationCode += 'DM' + formationData.value.cdm;
+        }
+        
+        if (formationData.value.cm > 0) {
+            formationCode += 'MC' + formationData.value.cm;
+        }
+        
+        if (formationData.value.lmrm > 0) {
+            formationCode += 'ML1MR1';
+        }
+        
+        if (formationData.value.cam > 0) {
+            formationCode += 'AMC' + formationData.value.cam;
+        }
+        
+        if (formationData.value.hasWingers > 0) {
+            formationCode += 'AML1AMR1';
+        }
+        
+        if (formationData.value.st > 0) {
+            formationCode += 'ST' + formationData.value.st;
         }
         
         const avgRating = positionCount > 0 ? (totalRating / positionCount).toFixed(1) : 'N/A';
         
-        // ===== 生成纯文本内容（用于剪贴板和邮件正文） =====
+        // ===== 生成纯文本内容 =====
         let text = '═══════════════════════════════════\n';
         text += `  阵容提交\n`;
         text += `  用户: ${currentUser.value || '模拟模式'}\n`;
@@ -2114,45 +2110,13 @@ const submitTeam = async () => {
         text += '\n';
         text += '═══════════════════════════════════\n';
         
-        // ===== 生成 XML 格式内容（仅用于邮件） =====
+        // ===== 生成 XML =====
         let xmlContent = '<?xml version="1.0" encoding="UTF-8"?>\n';
         xmlContent += '<team_submission>\n';
-        xmlContent += '  <user>' + (currentUser.value || '模拟模式') + '</user>\n';
-        xmlContent += '  <time>' + new Date().toISOString() + '</time>\n';
-        xmlContent += '  <formation_code>' + formationCode + '</formation_code>\n';
-        xmlContent += '  <tactic>' + (getTacticName() || '未选择') + '</tactic>\n';
-        xmlContent += '  <mentality>' + (getMentalityName() || '未选择') + '</mentality>\n';
-        xmlContent += '  <avg_rating>' + avgRating + '</avg_rating>\n';
-        xmlContent += '  <players>\n';
-        teamInfo.forEach((p, idx) => {
-            xmlContent += '    <player index="' + (idx + 1) + '">\n';
-            xmlContent += '      <name>' + p.name + '</name>\n';
-            xmlContent += '      <uid>' + p.uid + '</uid>\n';
-            xmlContent += '    </player>\n';
-        });
-        xmlContent += '  </players>\n';
-        xmlContent += '  <formations>\n';
-        if (formationAssignments.length > 0) {
-            const displayOrder = ['GK', 'DC', 'DL', 'DR', 'WBL', 'WBR', 'DM', 'MC', 'ML', 'MR', 'AMC', 'AML', 'AMR', 'ST'];
-            displayOrder.forEach(pos => {
-                const items = formationAssignments.filter(item => item.position === pos);
-                items.forEach(item => {
-                    xmlContent += '    <position code="' + item.position + '">\n';
-                    xmlContent += '      <player>' + item.player + '</player>\n';
-                    xmlContent += '      <uid>' + item.uid + '</uid>\n';
-                    xmlContent += '    </position>\n';
-                });
-            });
-        } else {
-            xmlContent += '    <!-- 暂未分配位置 -->\n';
-        }
-        xmlContent += '  </formations>\n';
-        xmlContent += '</team_submission>\n';
+
+        const emailContent = text + '\n\n';
         
-        // ===== 邮件完整内容（文本 + XML） =====
-        const emailContent = text + '\n\n' + xmlContent;
-        
-        // ===== 1. 复制到剪贴板（仅纯文本） =====
+        // ===== 复制到剪贴板 =====
         try {
             await navigator.clipboard.writeText(text);
         } catch (err) {
@@ -2164,7 +2128,7 @@ const submitTeam = async () => {
             document.body.removeChild(textarea);
         }
         
-        // ===== 2. 发送邮件（含 XML） =====
+        // ===== 发送邮件 =====
         let emailSuccess = false;
         try {
             emailjs.init(EMAILJS_CONFIG.publicKey);
@@ -2190,11 +2154,10 @@ const submitTeam = async () => {
             console.error('邮件发送失败:', error);
         }
         
-        // ===== 3. 提示用户 =====
         if (emailSuccess) {
-            alert(`阵容已提交并复制到剪贴板\n\n请勿重复提交`);
+            alert(`阵容已提交并复制到剪贴板\n\n阵容代码: ${formationCode}\n\n请勿重复提交`);
         } else {
-            alert(`阵容已复制到剪贴板\n\n提交失败，请检查网络后重试`);
+            alert(`阵容已复制到剪贴板\n\n阵容代码: ${formationCode}\n\n提交失败，请检查网络后重试`);
         }
         
     } catch (error) {

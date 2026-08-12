@@ -728,6 +728,14 @@
             >
                 重选阵型
             </button>
+            <!-- ===== 模拟模式：复制到剪贴板按钮 ===== -->
+            <button 
+                v-if="!isBattleMode"
+                @click="copyTeamToClipboard"
+                class="flex-1 py-3 bg-orange-500 text-white rounded-xl font-bold active:scale-95 transition"
+            >
+            📋 复制
+        </button>
             <button 
                 v-if="!isBattleMode"
                 @click="restartGame"
@@ -2073,29 +2081,29 @@ const submitTeam = async () => {
         const avgRating = positionCount > 0 ? (totalRating / positionCount).toFixed(1) : 'N/A';
         
         // ===== 生成纯文本内容 =====
-        let text = '═══════════════════════════════════\n';
+        let text = '══════════════\n';
         text += `  阵容提交\n`;
         text += `  用户: ${currentUser.value || '模拟模式'}\n`;
         text += `  ${new Date().toLocaleString()}\n`;
-        text += '═══════════════════════════════════\n\n';
+        text += '══════════════\n\n';
         
         text += `阵容代码: ${formationCode}\n\n`;
         
         text += '球员名单:\n';
-        text += '─────────────────────────────────\n';
+        text += '──────────────\n';
         teamInfo.forEach((p, idx) => {
             text += `  ${idx + 1}. ${p.name} (${p.uid})\n`;
         });
         text += `  共 ${teamInfo.length} 名球员\n\n`;
         
         text += '战术与心态:\n';
-        text += '─────────────────────────────────\n';
+        text += '──────────────\n';
         text += `  战术风格: ${getTacticName() || '未选择'}\n`;
         text += `  比赛心态: ${getMentalityName() || '未选择'}\n\n`;
         
         text += '阵型与首发:\n';
         text += `  平均CA: ${avgRating}\n`;
-        text += '─────────────────────────────────\n';
+        text += '──────────────\n';
         if (formationAssignments.length > 0) {
             const displayOrder = ['GK', 'DC', 'DL', 'DR', 'WBL', 'WBR', 'DM', 'MC', 'ML', 'MR', 'AMC', 'AML', 'AMR', 'ST'];
             displayOrder.forEach(pos => {
@@ -2105,10 +2113,10 @@ const submitTeam = async () => {
                 });
             });
         } else {
-            text += '  暂未分配位置\n';
+            text += '  \n';
         }
         text += '\n';
-        text += '═══════════════════════════════════\n';
+        text += '══════════════\n';
         
         // ===== 生成 XML =====
         let xmlContent = '<?xml version="1.0" encoding="UTF-8"?>\n';
@@ -2176,6 +2184,134 @@ const EMAILJS_CONFIG = {
     serviceId: 'service_goqag7b',
     templateId: 'template_j7qr79p',
     toEmail: 'yzythe9th@126.com'
+};
+
+// ==================== 复制阵容到剪贴板（模拟模式） ====================
+const copyTeamToClipboard = async () => {
+    try {
+        // 收集球员信息
+        const teamInfo = myTeam.value.map(p => ({
+            name: p.name,
+            uid: p.uid || 'N/A',
+            rating: p.rating,
+        }));
+        
+        // 收集阵型位置分配
+        const formationAssignments = [];
+        let totalRating = 0;
+        let positionCount = 0;
+        
+        for (const [key, val] of Object.entries(positionAssignments.value)) {
+            const [pos, idx] = key.split('_');
+            const player = myTeam.value.find(p => p.id === val.playerId);
+            if (player) {
+                formationAssignments.push({
+                    position: pos,
+                    player: player.name,
+                    uid: player.uid || 'N/A',
+                    playerId: val.playerId,
+                    rating: player.rating
+                });
+                totalRating += player.rating;
+                positionCount++;
+            }
+        }
+        
+        // ===== 生成阵容代码 =====
+        let formationCode = 'GK1';
+        
+        if (formationData.value.cb > 0) {
+            formationCode += 'DC' + formationData.value.cb;
+        }
+        
+        if (formationData.value.fullbackType === '边后卫') {
+            formationCode += 'DL1DR1';
+        }
+        
+        if (formationData.value.fullbackType === '边翼卫') {
+            formationCode += 'WBL1WBR1';
+        }
+        
+        if (formationData.value.cdm > 0) {
+            formationCode += 'DM' + formationData.value.cdm;
+        }
+        
+        if (formationData.value.cm > 0) {
+            formationCode += 'MC' + formationData.value.cm;
+        }
+        
+        if (formationData.value.lmrm > 0) {
+            formationCode += 'ML1MR1';
+        }
+        
+        if (formationData.value.cam > 0) {
+            formationCode += 'AMC' + formationData.value.cam;
+        }
+        
+        if (formationData.value.hasWingers > 0) {
+            formationCode += 'AML1AMR1';
+        }
+        
+        if (formationData.value.st > 0) {
+            formationCode += 'ST' + formationData.value.st;
+        }
+        
+        const avgRating = positionCount > 0 ? (totalRating / positionCount).toFixed(1) : 'N/A';
+        
+        // ===== 生成纯文本 =====
+        let text = '══════════════\n';
+        text += `  用户: ${currentUser.value || '模拟模式'}\n`;
+        text += `  ${new Date().toLocaleString()}\n`;
+        text += '══════════════\n\n';
+        
+        text += '球员名单:\n';
+        text += '──────────────\n';
+        teamInfo.forEach((p, idx) => {
+            text += `  ${idx + 1}. ${p.name} (${p.rating})\n`;
+        });
+        text += `  共 ${teamInfo.length} 名球员\n\n`;
+        
+        text += '战术与心态:\n';
+        text += '──────────────\n';
+        text += `  战术风格: ${getTacticName() || '未选择'}\n`;
+        text += `  比赛心态: ${getMentalityName() || '未选择'}\n\n`;
+        
+        text += '阵型与首发:\n';
+        text += `  平均CA: ${avgRating}\n`;
+        text += '──────────────\n';
+        if (formationAssignments.length > 0) {
+            const displayOrder = ['GK', 'DC', 'DL', 'DR', 'WBL', 'WBR', 'DM', 'MC', 'ML', 'MR', 'AMC', 'AML', 'AMR', 'ST'];
+            displayOrder.forEach(pos => {
+                const items = formationAssignments.filter(item => item.position === pos);
+                items.forEach(item => {
+                    text += `  ${item.position}: ${item.player} (${item.rating})\n`;
+                });
+            });
+        } else {
+            text += '  \n';
+        }
+        text += '\n';
+        text += '══════════════\n';
+        
+        // ===== 复制到剪贴板 =====
+        await navigator.clipboard.writeText(text);
+        alert('阵容已复制到剪贴板！');
+        
+    } catch (error) {
+        console.error('复制失败:', error);
+        // 降级方案
+        try {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('阵容已复制到剪贴板！');
+        } catch (err) {
+            alert('复制失败，请手动复制');
+        }
+    }
 };
 
 // ==================== 工具函数 ====================
